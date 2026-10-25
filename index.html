@@ -262,12 +262,12 @@ const NPCS = [
    location:"Schrottplatz", coords:null, faction:null, loadout:null, defaultText:null,
    questIds:[5045,5046,5047], totalRep:null,
    notes:"Übernimmt die Mechaniker-Reihe ab Quest 5044/5045. Gesamt-Reputation der kombinierten Mechaniker-Reihe (907+921): 1300 Rep."},
-  {id:910, name:"Archivar Igor Chernov", role:"Archivar", status:"geplant",
+  {id:910, name:"Archivar Igor Chernov", role:"Archivar / „Bücherwurm“-Reihe – Skillsystem & Skill-Items", status:"geplant",
    location:"Alexandria", coords:"3691.99, 402.02, 5981.97", faction:"InvincibleObservers",
    loadout:"SurvivorLoadout",
    defaultText:"„Wissen ist das Einzige, was hier nicht verrottet. Bring mir, was du findest.“",
    questIds:[], totalRep:null,
-   notes:"Ist bereits eine der 8 Stationen in Quest 5023. Aktuell keine eigene Quest und kein Turn-in-Ziel für eine eigene Reihe."},
+   notes:"Ist bereits eine der 8 Stationen in Quest 5023. Geplant ist die „Bücherwurm“-Reihe: Einführung in das Skillsystem und die dazugehörigen Skill-Items; Bücher, Zeitschriften, Karten und Wissensgegenstände können dabei thematisch eingebunden werden. Quest-IDs, genaue Objectives, Skill-Item-Classnames, Voraussetzungen und Rewards sind noch offen."},
   {id:909, name:"Milizionär Timur Bek", role:"Miliz", status:"final",
    location:"Alexandria", coords:null, faction:null, loadout:null, defaultText:null,
    questIds:[5101,5102,5103,5104,5098,5105,5106,5099], totalRep:2100,
@@ -293,9 +293,9 @@ const NPCS = [
    location:"Funkturm Erbenka", coords:null, questIds:[5037], totalRep:null, notes:null},
   {id:919, name:"Techniker Radoslav Kunc", role:"Funkturm-Techniker (Turn-in)", status:"final", minor:true,
    location:"Funkturm Olsha", coords:null, questIds:[5038], totalRep:null, notes:null},
-  {id:920, name:"Lewis Brenner", role:"Pfandhaus-Kontakt (Turn-in)", status:"im-aufbau", minor:true,
+  {id:920, name:"Lewis Brenner", role:"Underground-Händler / Pfandhaus / DrugRunning-Versorgung", status:"im-aufbau",
    location:"Metro / Pfandhaus", coords:null, questIds:[5040], totalRep:null,
-   notes:"Übergangs-Kontakt aus der Funkerin-Reihe (Quest 5040). Eigene Questreihe noch nicht geliefert."},
+   notes:"Übergangs-Kontakt aus der Funkerin-Reihe (Quest 5040). Geplant ist eine eigene Untergrund-Händler-/Tauschreihe: Zugang zu Zutaten, Chemikalien und Werkzeugen, die für DrugRunning benötigt werden. Konkretes Sortiment, Tausch-/Kauflogik, Quest-IDs und Rewards sind noch offen."},
   {
  "id": 924,
  "name": "Viktor „Ratte“ Malenko",
@@ -1777,11 +1777,36 @@ function questTitle(id){const q=quest(id);return q? ("#"+q.id+" – "+q.title) :
 
 /* Noch offene Roadmap der illegalen Hauptquestreihe – 5200–5207 sind inzwischen ausgearbeitet. */
 const PLANNED_UNBUILT = [
-  {id:5208,title:"Falsche Fracht"},{id:5209,title:"Blue Sky"},{id:5210,title:"Onkel Gena"},
-  {id:5211,title:"Der Schwarze Ritter"},{id:5212,title:"Insel ohne Zeugen"},{id:5213,title:"Bunte Zettel"},
-  {id:5214,title:"Der Kurs"},{id:5215,title:"Der erste Tausch"},{id:5216,title:"Weiße Ware"},
-  {id:5217,title:"Von Hand zu Hand"},{id:5218,title:"Lebend ist er mehr wert"},{id:5219,title:"Mitternachtszug"},
-  {id:5220,title:"Gewicht"},{id:5221,title:"Das Netzwerk"},
+  {id:5208,title:"Falsche Fracht",giver:"Krähe (926)",focus:"Direkte Fortsetzung nach 5207: manipulierte / ausgetauschte Schmuggelfracht verfolgen.",missing:"Ziele, Positionen, konkrete Items und Reward noch festlegen."},
+  {id:5209,title:"Blue Sky",giver:"Mr. White (925)",focus:"Geplante große Crystal-/Chemie-Lernquest bei Mr. White; Produktionsablauf und Rezeptwissen zusammenführen.",missing:"Aktuelle Classnames, exakte Rezeptschritte, Mengen, Objectives und Reward serverseitig finalisieren."},
+  {id:5210,title:"Onkel Gena",giver:"noch festzulegen",focus:"Einführung des geplanten Kontakts Gennadi „Onkel Gena“ Petrov und seines geheimen Burg-Lagers.",missing:"NPC-ID, Position, Questablauf, Voraussetzungen und Reward."},
+  {id:5211,title:"Der Schwarze Ritter",giver:"noch festzulegen",focus:"Geplante Folgequest rund um Burg / Schwarzer Ritter / Untergrundnetzwerk.",missing:"Questgeber, Ziel, Positionen, Items und Reward."},
+  {id:5212,title:"Insel ohne Zeugen",giver:"noch festzulegen",focus:"Geplante illegale Außenmission auf einer abgelegenen Insel.",missing:"Questgeber, Transport, Gegner/Objective, Loot und Reward."},
+  {id:5213,title:"Bunte Zettel",giver:"noch festzulegen",focus:"Geplante Quest der Untergrundreihe; genaue Funktion noch offen.",missing:"Storyzweck, Questgeber, Items, Ziel und Reward."},
+  {id:5214,title:"Der Kurs",giver:"noch festzulegen",focus:"Geplante Vorbereitung auf den Tausch-/Handelsabschnitt des Untergrundnetzwerks.",missing:"Questgeber, Mechanik, Ziel und Reward."},
+  {id:5215,title:"Der erste Tausch",giver:"Lewis Brenner (920) vorgesehen",focus:"Einstieg in den illegalen Tauschhandel / Pfandhaus-Loop.",missing:"Tauschware, Werte, Freischaltung, Objective und Reward."},
+  {id:5216,title:"Weiße Ware",giver:"noch festzulegen",focus:"Geplante Waren-/Drogenquest innerhalb des Netzwerks.",missing:"Questgeber, konkrete Ware, Mengen, Route und Reward."},
+  {id:5217,title:"Von Hand zu Hand",giver:"noch festzulegen",focus:"Geplante Übergabe-/Kurierquest innerhalb des Untergrundnetzwerks.",missing:"Geber/Turn-in, Route, Übergabeitem und Reward."},
+  {id:5218,title:"Lebend ist er mehr wert",giver:"noch festzulegen",focus:"Geplante Personen-/Escort- oder Fangmission.",missing:"Zielperson, AI/VIP-Technik, Positionen und Reward."},
+  {id:5219,title:"Mitternachtszug",giver:"noch festzulegen",focus:"Geplanter Zug-/Umschlagplatz-Heist im illegalen Netzwerk.",missing:"Ort, Gegner, Loot, Questgeber und Reward."},
+  {id:5220,title:"Gewicht",giver:"noch festzulegen",focus:"Geplante Hochwert-/Schwerlast-Quest kurz vor dem Abschluss des Netzwerks.",missing:"Mechanik, Items, Mengen, Questgeber und Reward."},
+  {id:5221,title:"Das Netzwerk",giver:"Sergej (916) / Netzwerk – final noch festzulegen",focus:"Geplanter Abschluss der illegalen Hauptquestreihe.",missing:"Finaler Ablauf, Voraussetzungen, Abschlussreward und dauerhafte Freischaltungen."},
+];
+
+const PLANNED_QUESTGIVERS = [
+  {name:"Archivar Igor Chernov – „Bücherwurm“-Reihe",npcId:"910",status:"Geplant",location:"Alexandria",role:"Skillsystem / Skill-Items / Wissen",entry:"Bereits Station in Quest 5023",planned:"Eigene Einführungsreihe für das Skillsystem und die dazugehörigen Skill-Items. Bücher, Zeitschriften, Karten und Wissensgegenstände sollen thematisch eingebunden werden.",missing:"Quest-IDs, Reihenfolge, Voraussetzungen, konkrete Skill-Item-Classnames, Objectives, Rewards und Rufpunkte."},
+  {name:"Trader-NPC",npcId:"noch offen",status:"Geplant",location:"noch offen",role:"Legaler Handel / Trader-System",entry:"Noch keine Quest vorhanden",planned:"Einführung in das Trader-System: Spieler lernt Händler, Kauf/Verkauf und relevante Handelsbereiche kennen.",missing:"Name, NPC-ID, Standort, Quest-IDs, Voraussetzungen, genaue Ziele, Items, Rewards und Rufpunkte."},
+  {name:"Lewis Brenner",npcId:"920",status:"Im Aufbau",location:"Metro / Pfandhaus",role:"Underground-Händler / DrugRunning-Versorgung",entry:"Über Quest 5040 bereits erreichbar",planned:"Eigene Untergrund-Händler-/Tauschreihe. Über Lewis sollen Zutaten, Chemikalien und Werkzeuge für die DrugRunning-Mod zugänglich werden. Der Handel soll zur illegalen Progression passen.",missing:"Sortiment, konkrete Classnames, Kauf-/Tauschwerte, Freischaltbedingungen, eigene Quest-IDs und Rewards."},
+  {name:"Mining-NPC",npcId:"noch offen",status:"Geplant",location:"Kamensk Mine / bestehender Eingang",role:"Mining / Minen-Progression",entry:"Noch keine Quest vorhanden",planned:"Einführung in das Mining-System. Der bestehende Kamensk-Mine-Eingang soll in einen ausgelagerten Minenkomplex führen; geplant sind vier Mining-Ebenen mit eigener Progression, Werkzeugen, Rohstoffen und Verarbeitung.",missing:"Name, NPC-ID, genaue Position, Quest-IDs, Mining-Classnames, Ebenen-Freischaltungen, Objectives, Rewards und finale Map-Umsetzung."},
+  {name:"Gennadi „Onkel Gena“ Petrov",npcId:"noch offen",status:"Geplant",location:"Geheimes Burg-Lager",role:"Untergrund-Lager / seltene Ware",entry:"Geplant für Quest 5210",planned:"Neuer Kontakt der illegalen Hauptreihe mit eigenem Lager und Zugang zu seltener Ware / Netzwerkbestand.",missing:"NPC-ID, exakte Position, Loadout, Questgeber-/Turn-in-Struktur und spätere Händler-/Lagerfunktion."}
+];
+
+const PLANNED_CHAINS = [
+  {name:"Bücherwurm / Skillsystem",giver:"Archivar Igor Chernov (910)",status:"Geplant",prereq:"Einstieg über Alexandria / 5023 vorgesehen",focus:"Skillsystem erklären, Skill-Items vorstellen und Wissen-/Buch-Funde in eine Progression einbinden.",planned:"Quest-IDs noch offen",items:"Skill-Items / Bücher / Zeitschriften / Karten – Classnames noch festzulegen",missing:"Objectives, Rufschwellen, Rewards und finale Skill-Progression."},
+  {name:"Trader / Handel",giver:"Trader-NPC – Name & ID offen",status:"Geplant",prereq:"noch offen",focus:"Legales Trader-System erklären: Kaufen, Verkaufen, Händlerbereiche und wichtige Handelsitems.",planned:"Quest-IDs noch offen",items:"Trader-Ware noch festzulegen",missing:"NPC, Standort, Quests, Freischaltung, Rewards und Reputation."},
+  {name:"Underground-Händler / DrugRunning-Versorgung",giver:"Lewis Brenner (920)",status:"Im Aufbau",prereq:"5040 „Der Kontakt“ als vorhandener Zugang",focus:"Illegale Versorgung mit Zutaten, Chemikalien und Werkzeugen für DrugRunning; später Tausch-/Pfandhaus-Progression.",planned:"Eigene Folgequests noch offen; 5215 „Der erste Tausch“ ist als späterer Teil vorgesehen",items:"DrugRunning-Zutaten / Chemikalien / Werkzeuge – Sortiment und Werte noch offen",missing:"Sortiment, Tausch-/Kauflogik, Quest-IDs, Rufschwellen und Rewards."},
+  {name:"Mining / Mine",giver:"Mining-NPC – Name & ID offen",status:"Geplant",prereq:"noch offen",focus:"Mining-System einführen; vom bestehenden Kamensk-Mine-Eingang in einen ausgelagerten Komplex mit vier Mining-Ebenen und eigener Progression.",planned:"Quest-IDs noch offen",items:"Mining-Werkzeuge, Erze/Rohstoffe, Verarbeitungsitems – Classnames noch offen",missing:"NPC-Daten, Map-Endstand, Ebenen-Freischaltung, Objectives, Rewards und Rufpunkte."},
+  {name:"Illegale Hauptreihe – Fortsetzung",giver:"Krähe → Mr. White → weitere Netzwerk-Kontakte",status:"Geplant",prereq:"5207 abgeschlossen",focus:"5208–5221 vervollständigen: Schmuggel, Blue Sky/Chemie, Onkel Gena, Tauschhandel, Escort/Heists und Netzwerk-Abschluss.",planned:"5208–5221",items:"je Quest noch festzulegen",missing:"Quest für Quest: Geber/Turn-in, Objectives, Positionen, Items, Rewards, Ruf und technische Umsetzung."}
 ];
 
 const PLANNED_CONTACTS = [
@@ -1790,16 +1815,19 @@ const PLANNED_CONTACTS = [
   "Mikhail „Mr. White“ Orlov – NPC 925 – Produktion / Chemie",
   "Katya „Krähe“ Morozova – NPC 926 – Schmuggel / Wasserwege",
   "Gennadi „Onkel Gena“ Petrov – geplanter Kontakt / Burg-Lager",
-  "Lewis Brenner – NPC 920 – Metro / Pfandhaus"
+  "Lewis Brenner – NPC 920 – Underground-Händler / Metro / Pfandhaus"
 ];
-const PLANNED_LOCATIONS = ["Versteckte Scheune","Drogenhaus im Wald","Haus am See","Schiffswrack","Abgelegene Insel","Geheimes Lager in der Burg","Militärischer Umschlagplatz mit Zug","Metro"];
+const PLANNED_LOCATIONS = ["Versteckte Scheune","Drogenhaus im Wald","Haus am See","Schiffswrack","Abgelegene Insel","Geheimes Lager in der Burg","Militärischer Umschlagplatz mit Zug","Metro","Kamensk Mine / ausgelagerter Minenkomplex"];
 
 const OPEN_POINTS = [
-  {area:"Illegale Hauptreihe",status:"offen",text:"5208 „Falsche Fracht“ bis 5221 „Das Netzwerk“ sind noch Roadmap und müssen Quest für Quest ausgearbeitet werden."},
+  {area:"Illegale Hauptreihe",status:"offen",text:"5208 „Falsche Fracht“ bis 5221 „Das Netzwerk“ sind noch Roadmap und müssen Quest für Quest ausgearbeitet werden. Die Übersicht zeigt jetzt bei jeder geplanten Quest den vorgesehenen Kontakt bzw. was noch fehlt."},
   {area:"5203",status:"prüfen",text:"Exakte Gelato-Bud-Branch-Classnames, rohe Branch-Menge und aktueller Yield aus der installierten iM7s-Version serverseitig verifizieren."},
   {area:"5029",status:"prüfen",text:"4x DryingBud Gelato + 4x DryingBud Blue Cookies sind festgelegt; exakte technische DryingBud-Classnames noch aus der aktuellen Serverconfig bestätigen."},
-  {area:"Lewis Brenner (920)",status:"offen",text:"Kontakt über 5040 vorhanden; eigene Lewis-/Pfandhaus-Questreihe noch nicht ausgearbeitet."},
-  {area:"Archivar Igor (910)",status:"offen",text:"NPC/Station existiert, aber eine eigene Archivar-Questreihe fehlt noch."},
+  {area:"Bücherwurm / Skillsystem",status:"offen",text:"Archivar Igor Chernov (910) ist vorhanden. Eigene Questreihe zur Einführung in Skillsystem und Skill-Items fehlt noch: Quest-IDs, Objectives, Skill-Items, Rufschwellen und Rewards festlegen."},
+  {area:"Trader-NPC",status:"offen",text:"Legaler Trader-Questgeber fehlt noch komplett: Name, NPC-ID, Standort, Questreihe, Ziele, Items, Rewards und Rufpunkte festlegen."},
+  {area:"Lewis Brenner (920)",status:"im Aufbau",text:"Kontakt über 5040 vorhanden. Eigene Underground-Händler-/Pfandhaus-Reihe fehlt noch; Sortiment aus DrugRunning-Zutaten, Chemikalien und Werkzeugen sowie Kauf-/Tauschwerte und Freischaltung definieren."},
+  {area:"Mining-NPC / Mine",status:"offen",text:"Mining-Questgeber und Reihe fehlen noch. Geplant: Einstieg an der Kamensk Mine und Progression durch einen ausgelagerten Minenkomplex mit vier Ebenen. NPC-Daten, Map-Endstand, Mining-Items, Objectives und Rewards fehlen."},
+  {area:"Onkel Gena",status:"offen",text:"Gennadi „Onkel Gena“ Petrov ist als geplanter Kontakt für 5210 / geheimes Burg-Lager vorgesehen; NPC-ID, Position, Loadout und konkrete Questfunktion fehlen noch."},
   {area:"5208",status:"nächster Schritt",text:"Direkte Fortsetzung nach 5207 bei Krähe: Ziele, Positionen, Items und Reward für „Falsche Fracht“ noch festlegen."}
 ];
 
@@ -1909,6 +1937,8 @@ function renderOverview(){
   const finalQuests = QUESTS.filter(q=>q.status==="final").length;
   const draftQuests = QUESTS.filter(q=>q.status==="entwurf").length;
   const plannedQuests = PLANNED_UNBUILT.length;
+  const plannedQuestgivers = PLANNED_QUESTGIVERS.length;
+  const plannedSystems = PLANNED_CHAINS.length;
   const repeatableAll = QUESTS.filter(q=>q.repeat==="wiederholbar"||q.repeat==="taeglich").length;
   const dailyQuests = QUESTS.filter(q=>q.repeat==="taeglich").length;
   const onceQuests = QUESTS.filter(q=>q.repeat==="einmalig").length;
@@ -1926,7 +1956,9 @@ function renderOverview(){
       <div class="stat gold"><div class="num">${totalQuests}</div><div class="lbl">Quests gesamt (live)</div></div>
       <div class="stat"><div class="num">${finalQuests}</div><div class="lbl">Fertige (finale) Quests</div></div>
       <div class="stat rust"><div class="num">${draftQuests}</div><div class="lbl">Quests im Aufbau (Entwurf)</div></div>
-      <div class="stat rust"><div class="num">${plannedQuests}</div><div class="lbl">Offene Roadmap (5208–5221)</div></div>
+      <div class="stat rust"><div class="num">${plannedQuests}</div><div class="lbl">Offene illegale Quests (5208–5221)</div></div>
+      <div class="stat rust"><div class="num">${plannedQuestgivers}</div><div class="lbl">Geplante Questgeber / Kontakte</div></div>
+      <div class="stat"><div class="num">${plannedSystems}</div><div class="lbl">Geplante Quest-/Systemreihen</div></div>
       <div class="stat"><div class="num">${repeatableAll}</div><div class="lbl">Wiederholbare Quests</div></div>
       <div class="stat"><div class="num">${onceQuests}</div><div class="lbl">Einmalige Quests</div></div>
       <div class="stat"><div class="num">${dailyQuests}</div><div class="lbl">Tägliche Quests</div></div>
@@ -1955,8 +1987,10 @@ function renderOverview(){
       <div class="kv">
         <div class="k">Final überarbeitet</div><div class="v">${NPCS.filter(n=>n.status==="final"&&!n.minor).map(n=>n.name+" ("+n.id+")").join(", ")}</div>
         <div class="k">Im Aufbau / Geplant</div><div class="v">${NPCS.filter(n=>(n.status==="im-aufbau"||n.status==="geplant")&&!n.minor).map(n=>n.name+" ("+n.id+")").join(", ")}</div>
+        <div class="k">Weitere geplante Questgeber</div><div class="v">${PLANNED_QUESTGIVERS.filter(p=>p.npcId==="noch offen").map(p=>p.name).join(", ") || "–"}</div>
+        <div class="k">Geplante Systeme</div><div class="v">Bücherwurm/Skillsystem, Trader, Underground-Händler, Mining sowie Fortsetzung der illegalen Hauptreihe.</div>
       </div>
-      <div class="note-box">Hinweis: Die illegale Hauptreihe ist bis einschließlich 5207 ausgearbeitet. 5208–5221 bleiben Roadmap. Offene Technik-/Designpunkte stehen gesammelt unter „Offene Punkte“.</div>
+      <div class="note-box">Hinweis: Die illegale Hauptreihe ist bis einschließlich 5207 ausgearbeitet. 5208–5221 bleiben Roadmap. Zusätzlich sind Bücherwurm/Skillsystem, Trader, Underground-Händler und Mining als eigene offene Reihen sichtbar. Offene Technik-/Designpunkte stehen gesammelt unter „Offene Punkte“.</div>
     </div>
   `;
 }
@@ -1970,10 +2004,13 @@ function renderNpcs(){
   const minor = NPCS.filter(n=>n.minor);
   el.innerHTML = `
     <h2 class="viewtitle"><span class="f2">Alexandria</span>NPC-Übersicht</h2>
-    <p class="viewdesc">Alle Haupt-NPCs des Questsystems. Klicke auf eine Karte für Details, Questkette und Reputation.</p>
+    <p class="viewdesc">Alle bestehenden Haupt-NPCs sowie geplante Questgeber und Systemkontakte. Fertige und geplante Inhalte sind bewusst getrennt.</p>
     <div class="grid" id="npc-main-grid"></div>
-    <h4 style="color:var(--gold);margin:30px 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--line-soft);padding-bottom:8px">Weitere Kontakte (Turn-in-NPCs ohne eigenes Profil)</h4>
+    <h4 style="color:var(--gold);margin:30px 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--line-soft);padding-bottom:8px">Weitere Kontakte / Turn-in-NPCs</h4>
     <div class="grid" id="npc-minor-grid"></div>
+    <h4 style="color:var(--gold);margin:30px 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--line-soft);padding-bottom:8px">Geplante Questgeber & Systeme</h4>
+    <div class="note-box warn" style="margin-bottom:12px">Diese Karten sind Planung und noch nicht automatisch live auf dem Server. Offene IDs, Positionen, Quest-IDs, Items und Rewards werden absichtlich als offen markiert.</div>
+    <div class="grid" id="npc-planned-grid"></div>
   `;
   document.getElementById("npc-main-grid").innerHTML = main.map(n=>{
     const repText = n.repPerCycle!==undefined ? n.repPerCycle+" Rep/Tag" : (n.totalRep!==null && n.totalRep!==undefined ? n.totalRep+" Rep" : "Noch nicht definiert");
@@ -1991,6 +2028,16 @@ function renderNpcs(){
       +'<h3>'+esc(n.name)+'</h3>'
       +'<div class="role">'+esc(n.role)+'</div>'
       +'<div class="metaline">Standort: '+esc(n.location||"Noch nicht definiert")+'</div>'
+      +'</div>';
+  }).join("");
+  document.getElementById("npc-planned-grid").innerHTML = PLANNED_QUESTGIVERS.map(p=>{
+    return '<div class="npc-card">'
+      +'<div class="qid" style="font-family:var(--mono);color:var(--rust-light);font-size:11px">NPC '+esc(p.npcId)+'</div>'
+      +'<h3>'+esc(p.name)+'</h3>'
+      +'<div class="role">'+esc(p.role)+'</div>'
+      +'<div class="badges"><span class="badge geplant">'+esc(p.status)+'</span></div>'
+      +'<div class="metaline" style="margin-top:10px"><b>Standort:</b> '+esc(p.location)+'</div>'
+      +'<div class="note-box"><b>Zugang:</b> '+esc(p.entry)+'<br><br><b>Geplant:</b> '+esc(p.planned)+'<br><br><b>Noch offen:</b> '+esc(p.missing)+'</div>'
       +'</div>';
   }).join("");
 }
@@ -2227,7 +2274,13 @@ function renderChains(){
       const qs=chain.ids.map(id=>quest(id)).filter(Boolean);
       const sum=qs.reduce((a,q)=>a+(q.reward&&q.reward.rep?q.reward.rep:0),0);
       return `<div class="section-block"><div class="chain-header"><div><div class="chain-meta">${esc(chain.theme)}</div><h3>${esc(chain.name)}</h3></div><div class="repplus">+${sum} Rep · Summe bei einmaligem Abschluss</div></div><p class="viewdesc" style="margin-bottom:12px">${esc(chain.desc)}</p><div class="chain-table-wrap"><table class="chain-table"><thead><tr><th>#</th><th>Quest</th><th>Geber → Turn-in</th><th>Voraussetzung / Ruf</th><th>Ziel</th><th>Abgabe / Start / Fund</th><th>Reward</th><th>Rep</th></tr></thead><tbody>${qs.map((q,idx)=>`<tr><td>${idx+1}<br><span class="linkchip" onclick="openQuest(${q.id})">#${q.id}</span></td><td><span class="qname">${esc(q.title)}</span><br><span class="chain-meta">${repeatLabel(q.repeat)} · ${(q.tags||[]).join(" / ")}</span></td><td>${esc(q.giver)}<br><span class="chain-meta">→ ${esc(q.turnIn)}</span></td><td>${(q.prereq&&q.prereq.length)?q.prereq.map(x=>"#"+x).join(", "):"–"}<br><span class="repplus">${q.rep?"Rep "+q.rep+"+":"keine Rufschwelle"}</span></td><td>${compactGoal(q)}</td><td>${q.startItems&&q.startItems.length?"<b>Start:</b><br>"+compactItems(q.startItems)+"<br>":""}${q.delivery&&q.delivery.length?"<b>Abgabe:</b><br>"+compactItems(q.delivery)+"<br>":""}${q.loot&&q.loot.length?"<b>Fund:</b><br>"+compactItems(q.loot):(!(q.startItems&&q.startItems.length)&&!(q.delivery&&q.delivery.length)?"–":"")}</td><td>${q.reward&&q.reward.items&&q.reward.items.length?compactItems(q.reward.items):((q.reward&&q.reward.note)||"Kein Item-Reward")}</td><td class="repplus">+${q.reward&&q.reward.rep?q.reward.rep:0}</td></tr>`).join("")}</tbody></table></div></div>`;
-    }).join("")}`;
+    }).join("")}
+    <div class="section-block" style="margin-top:24px">
+      <div class="chain-header"><div><div class="chain-meta">PLANUNG</div><h3>Geplante / noch offene Quest-Reihen</h3></div><div class="repplus">Noch nicht live</div></div>
+      <p class="viewdesc" style="margin-bottom:12px">Diese Reihen gehören zur Gesamtplanung des Servers, sind aber noch nicht vollständig gebaut. Fehlende IDs, Items, Rufwerte oder Rewards werden nicht erfunden, sondern offen ausgewiesen.</p>
+      <div class="chain-table-wrap"><table class="chain-table"><thead><tr><th>Reihe</th><th>Questgeber</th><th>Status / Zugang</th><th>Geplanter Zweck</th><th>Quests</th><th>Items / Systeme</th><th>Noch offen</th></tr></thead><tbody>${PLANNED_CHAINS.map(c=>`<tr><td><span class="qname">${esc(c.name)}</span></td><td>${esc(c.giver)}</td><td><span class="badge geplant">${esc(c.status)}</span><br><span class="chain-meta">${esc(c.prereq)}</span></td><td>${esc(c.focus)}</td><td>${esc(c.planned)}</td><td>${esc(c.items)}</td><td>${esc(c.missing)}</td></tr>`).join("")}</tbody></table></div>
+    </div>
+    }`;
 }
 
 /* ============================================================
@@ -2510,7 +2563,36 @@ function renderBoard(){
    ============================================================ */
 function renderDev(){
   const el = document.getElementById("view-dev");
-  el.innerHTML = `<h2 class="viewtitle"><span class="f2">STATUS</span>In Entwicklung / Roadmap</h2><p class="viewdesc">Alles, was bereits ausgearbeitet ist, steht im normalen Questbuch. Hier bleiben nur geplante Folgequests und noch nicht ausgebaute NPC-Reihen.</p><div class="section-block"><h4>Illegale Hauptreihe – nächste Quests</h4><div class="note-box">5200–5207 sind ausgearbeitet. Ab 5208 geht die Planung weiter.</div><div class="badges" style="margin-top:12px">${PLANNED_UNBUILT.map(p=>'<span class="badge geplant">#'+p.id+' '+esc(p.title)+'</span>').join("")}</div></div><div class="section-block"><h4>Untergrundkontakte</h4><ul class="itemlist">${PLANNED_CONTACTS.map(c=>'<li><span></span><span>'+esc(c)+'</span></li>').join("")}</ul></div><div class="section-block"><h4>Weitere offene Reihen</h4><div class="kv"><div class="k">Lewis Brenner (920)</div><div class="v">Kontakt existiert über 5040; eigene Pfandhaus-/Tauschreihe noch offen.</div><div class="k">Archivar Igor (910)</div><div class="v">NPC/Station existiert; eigene Wissens-/Sammlerreihe noch offen.</div></div></div>`;
+  el.innerHTML = `
+    <h2 class="viewtitle"><span class="f2">STATUS</span>In Entwicklung / Roadmap</h2>
+    <p class="viewdesc">Hier stehen alle Questgeber, Systeme und Quests, die zum F²Z-Questnetz gehören, aber noch nicht vollständig fertiggestellt sind. Dadurch verschwindet nichts mehr aus der Gesamtübersicht, nur weil es noch nicht live ist.</p>
+
+    <div class="section-block">
+      <h4>Geplante Questgeber / System-NPCs</h4>
+      <div class="grid">${PLANNED_QUESTGIVERS.map(p=>`<div class="card" style="cursor:default"><div class="row1"><span class="qid">NPC ${esc(p.npcId)}</span><span class="badge geplant">${esc(p.status)}</span></div><h3>${esc(p.name)}</h3><div class="metaline"><b>${esc(p.role)}</b> · ${esc(p.location)}</div><div class="note-box"><b>Geplant:</b> ${esc(p.planned)}<br><br><b>Noch offen:</b> ${esc(p.missing)}</div></div>`).join("")}</div>
+    </div>
+
+    <div class="section-block">
+      <h4>Illegale Hauptreihe – 5208 bis 5221</h4>
+      <div class="note-box">5200–5207 sind bereits ausgearbeitet. Die folgenden Quests gehören fest zur Roadmap und werden nun mit vorgesehenem Questgeber/Fokus und den noch fehlenden Daten angezeigt.</div>
+      <div class="chain-table-wrap" style="margin-top:12px"><table class="chain-table"><thead><tr><th>ID</th><th>Titel</th><th>Questgeber / Kontakt</th><th>Geplanter Fokus</th><th>Noch offen</th></tr></thead><tbody>${PLANNED_UNBUILT.map(p=>`<tr><td><span class="qid">#${p.id}</span></td><td><b>${esc(p.title)}</b></td><td>${esc(p.giver)}</td><td>${esc(p.focus)}</td><td>${esc(p.missing)}</td></tr>`).join("")}</tbody></table></div>
+    </div>
+
+    <div class="section-block">
+      <h4>Geplante eigenständige Reihen</h4>
+      <div class="chain-table-wrap"><table class="chain-table"><thead><tr><th>Reihe</th><th>Questgeber</th><th>Zugang</th><th>Zweck</th><th>Geplante Quests</th><th>Noch offen</th></tr></thead><tbody>${PLANNED_CHAINS.map(c=>`<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.giver)}</td><td>${esc(c.prereq)}</td><td>${esc(c.focus)}</td><td>${esc(c.planned)}</td><td>${esc(c.missing)}</td></tr>`).join("")}</tbody></table></div>
+    </div>
+
+    <div class="section-block">
+      <h4>Bekannte Untergrundkontakte</h4>
+      <ul class="itemlist">${PLANNED_CONTACTS.map(c=>'<li><span></span><span>'+esc(c)+'</span></li>').join("")}</ul>
+    </div>
+
+    <div class="section-block">
+      <h4>Geplante wichtige Orte</h4>
+      <div class="badges">${PLANNED_LOCATIONS.map(l=>'<span class="badge">'+esc(l)+'</span>').join("")}</div>
+    </div>
+  `;
 }
 
 /* ============================================================
@@ -2522,7 +2604,7 @@ function renderIssues(){
   const dupes=Object.entries(idCounts).filter(([id,c])=>c>1);
   const missingPrereq=[]; QUESTS.forEach(q=>(q.prereq||[]).forEach(p=>{if(!quest(p))missingPrereq.push({quest:q.id,missing:p});}));
   const notFinal=QUESTS.filter(q=>q.status!=="final");
-  el.innerHTML=`<h2 class="viewtitle"><span class="f2">QA & PLANUNG</span>Offene Punkte</h2><p class="viewdesc">Was fehlt noch, was muss serverseitig verifiziert werden und wo geht die Questplanung als Nächstes weiter?</p><div class="section-block"><h4>Aktuell offene Punkte</h4><table class="datacheck"><tr><th>Bereich</th><th>Status</th><th>Offener Punkt</th></tr>${OPEN_POINTS.map(o=>'<tr><td><b>'+esc(o.area)+'</b></td><td class="status-open">'+esc(o.status)+'</td><td>'+esc(o.text)+'</td></tr>').join("")}</table></div><div class="section-block"><h4>Automatische Datenprüfung</h4><div class="kv"><div class="k">Doppelte Quest-IDs</div><div class="v">${dupes.length?dupes.map(([id,c])=>"#"+id+" ("+c+"×)").join(", "):"Keine – OK"}</div><div class="k">Fehlende Prereq-IDs</div><div class="v">${missingPrereq.length?missingPrereq.map(m=>"#"+m.quest+" → #"+m.missing).join(", "):"Keine – OK"}</div><div class="k">Nicht finale Live-Quests</div><div class="v">${notFinal.length?notFinal.map(q=>"#"+q.id).join(", "):"Keine – OK"}</div><div class="k">Illegale Reihe ausgearbeitet</div><div class="v">5200–5207</div><div class="k">Illegale Reihe Roadmap</div><div class="v">5208–5221</div></div></div><div class="section-block"><h4>Hinweise</h4><ul class="itemlist"><li><span></span><span>Quest 5000 hat weiterhin den bekannten technischen FollowUp-Hinweis auf 5001, während die tatsächliche Einstiegskette über 5023 läuft.</span></li><li><span></span><span>5009 wird thematisch beim Basisausbau/Boris geführt, technisch aber von Miroslav gestartet und bei Boris abgegeben.</span></li><li><span></span><span>5207 hat bewusst keinen separaten Item-Reward: Der komplette Loot aus beiden Seekisten bleibt beim Spieler.</span></li></ul></div>`;
+  el.innerHTML=`<h2 class="viewtitle"><span class="f2">QA & PLANUNG</span>Offene Punkte</h2><p class="viewdesc">Was fehlt noch, was muss serverseitig verifiziert werden und wo geht die Questplanung als Nächstes weiter?</p><div class="section-block"><h4>Aktuell offene Punkte</h4><table class="datacheck"><tr><th>Bereich</th><th>Status</th><th>Offener Punkt</th></tr>${OPEN_POINTS.map(o=>'<tr><td><b>'+esc(o.area)+'</b></td><td class="status-open">'+esc(o.status)+'</td><td>'+esc(o.text)+'</td></tr>').join("")}</table></div><div class="section-block"><h4>Automatische Datenprüfung</h4><div class="kv"><div class="k">Doppelte Quest-IDs</div><div class="v">${dupes.length?dupes.map(([id,c])=>"#"+id+" ("+c+"×)").join(", "):"Keine – OK"}</div><div class="k">Fehlende Prereq-IDs</div><div class="v">${missingPrereq.length?missingPrereq.map(m=>"#"+m.quest+" → #"+m.missing).join(", "):"Keine – OK"}</div><div class="k">Nicht finale Live-Quests</div><div class="v">${notFinal.length?notFinal.map(q=>"#"+q.id).join(", "):"Keine – OK"}</div><div class="k">Illegale Reihe ausgearbeitet</div><div class="v">5200–5207</div><div class="k">Illegale Reihe Roadmap</div><div class="v">5208–5221</div><div class="k">Weitere geplante Reihen</div><div class="v">Bücherwurm/Skillsystem · Trader · Underground-Händler · Mining</div></div></div><div class="section-block"><h4>Hinweise</h4><ul class="itemlist"><li><span></span><span>Quest 5000 hat weiterhin den bekannten technischen FollowUp-Hinweis auf 5001, während die tatsächliche Einstiegskette über 5023 läuft.</span></li><li><span></span><span>5009 wird thematisch beim Basisausbau/Boris geführt, technisch aber von Miroslav gestartet und bei Boris abgegeben.</span></li><li><span></span><span>5207 hat bewusst keinen separaten Item-Reward: Der komplette Loot aus beiden Seekisten bleibt beim Spieler.</span></li></ul></div>`;
 }
 
 /* ============================================================
