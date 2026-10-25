@@ -1,0 +1,2541 @@
+<title>F²Z – Quest-System & Spielerübersicht</title>
+<style>
+:root{
+  --bg:#15171a; --bg2:#1b1e21; --panel:#20242699; --panel-solid:#20242e;
+  --line:#33383b; --line-soft:#2a2e31;
+  --ink:#dfe3e2; --ink-dim:#98a19c; --ink-faint:#6b7570;
+  --olive:#6b7048; --olive-light:#8a9163;
+  --rust:#a8542f; --rust-light:#c76b40;
+  --red:#8c3b32;
+  --gold:#c9a24b; --gold-light:#e0bd6e;
+  --green:#5c7a52;
+  --radius:3px;
+  --mono:'Consolas','Courier New',monospace;
+  --sans:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);margin:0;min-height:100vh;
+  background-image:
+    linear-gradient(rgba(20,22,20,0.9),rgba(20,22,20,0.96)),
+    repeating-linear-gradient(45deg,#1c1e1c 0,#1c1e1c 2px,#191b19 2px,#191b19 4px);
+}
+a{color:var(--gold-light);text-decoration:none}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+.sidebar{background:var(--bg2);border-right:1px solid var(--line);padding:18px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{padding:0 16px 16px;border-bottom:1px solid var(--line-soft);margin-bottom:10px}
+.brand .f2{font-family:var(--mono);color:var(--rust-light);font-size:11px;letter-spacing:2px;text-transform:uppercase}
+.brand h1{font-size:17px;margin:4px 0 2px;color:var(--ink);letter-spacing:.5px}
+.brand .sub{font-size:11px;color:var(--gold);letter-spacing:1px;text-transform:uppercase}
+nav.navlist{display:flex;flex-direction:column;padding:6px 8px}
+nav.navlist button{
+  all:unset;cursor:pointer;padding:9px 12px;margin:1px 0;border-radius:var(--radius);
+  color:var(--ink-dim);font-size:13px;display:flex;align-items:center;gap:8px;border-left:2px solid transparent;
+}
+nav.navlist button:hover{background:#ffffff08;color:var(--ink)}
+nav.navlist button.active{background:#ffffff10;color:var(--gold-light);border-left:2px solid var(--rust-light)}
+nav.navlist .grp-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-faint);margin:14px 12px 4px}
+
+main{padding:26px 32px 60px;max-width:1300px}
+.view{display:none}
+.view.active{display:block}
+h2.viewtitle{font-size:22px;margin:0 0 4px;color:var(--ink);letter-spacing:.3px}
+.viewtitle .f2{color:var(--rust-light);font-family:var(--mono);font-size:12px;display:block;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+p.viewdesc{color:var(--ink-dim);font-size:13px;margin:0 0 20px;max-width:760px;line-height:1.5}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:28px}
+.stat{background:var(--panel-solid);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--olive)}
+.stat.gold::before{background:var(--gold)}
+.stat.rust::before{background:var(--rust)}
+.stat .num{font-size:24px;font-weight:600;color:var(--ink);font-family:var(--mono)}
+.stat .lbl{font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.6px;margin-top:2px}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;align-items:center}
+input[type=text],select{
+  background:var(--bg2);border:1px solid var(--line);color:var(--ink);padding:8px 10px;border-radius:var(--radius);
+  font-size:13px;font-family:var(--sans);
+}
+input[type=text]{min-width:220px}
+input[type=text]:focus,select:focus{outline:1px solid var(--gold);border-color:var(--gold)}
+.chip-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.chip{
+  border:1px solid var(--line);background:var(--bg2);color:var(--ink-dim);font-size:11.5px;padding:5px 10px;
+  border-radius:20px;cursor:pointer;letter-spacing:.2px;user-select:none;
+}
+.chip:hover{border-color:var(--ink-faint);color:var(--ink)}
+.chip.on{background:var(--olive);border-color:var(--olive);color:#101210;font-weight:600}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.card{background:var(--panel-solid);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;cursor:pointer;transition:border-color .12s,transform .12s}
+.card:hover{border-color:var(--gold);transform:translateY(-1px)}
+.card .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.card .qid{font-family:var(--mono);color:var(--rust-light);font-size:11px}
+.card h3{font-size:14.5px;margin:2px 0 6px;color:var(--ink);line-height:1.3}
+.card .metaline{font-size:11.5px;color:var(--ink-dim);display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:8px}
+.card .metaline b{color:var(--ink)}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.badge{font-size:10px;padding:2px 7px;border-radius:10px;border:1px solid var(--line);color:var(--ink-dim);text-transform:uppercase;letter-spacing:.4px}
+.badge.final{border-color:var(--green);color:var(--green)}
+.badge.aufbau{border-color:var(--rust);color:var(--rust-light)}
+.badge.geplant{border-color:var(--ink-faint);color:var(--ink-faint)}
+.badge.illegal{border-color:var(--red);color:#d98b7f}
+.badge.rep{border-color:var(--gold);color:var(--gold)}
+.badge.uebergang{border-color:#7a8fae;color:#9db3d6}
+.badge.chapter{border-color:var(--gold);color:var(--gold-light);background:#c9a24b14}
+
+.section-block{background:var(--panel-solid);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:16px}
+.section-block h4{margin:0 0 10px;font-size:13px;color:var(--gold);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--line-soft);padding-bottom:8px}
+.kv{display:grid;grid-template-columns:180px 1fr;gap:6px 14px;font-size:13px}
+.kv div.k{color:var(--ink-dim)}
+.kv div.v{color:var(--ink)}
+.dialog-block{border-left:3px solid var(--olive);padding:10px 14px;margin-bottom:10px;background:#ffffff05;border-radius:0 var(--radius) var(--radius) 0}
+.dialog-block .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--olive-light);margin-bottom:6px}
+.dialog-block p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink);white-space:pre-line}
+.dialog-block.missing{border-left-color:var(--ink-faint)}
+.dialog-block.missing p{color:var(--ink-faint);font-style:italic}
+.itemlist{list-style:none;margin:0;padding:0;font-size:13px}
+.itemlist li{padding:5px 0;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;gap:10px}
+.itemlist li:last-child{border-bottom:none}
+.itemlist .qty{font-family:var(--mono);color:var(--gold);min-width:46px}
+.itemlist .note{color:var(--ink-faint);font-size:11.5px}
+.linklist{display:flex;flex-wrap:wrap;gap:6px}
+.linkchip{font-size:12px;padding:4px 9px;border:1px solid var(--line);border-radius:var(--radius);color:var(--gold-light);cursor:pointer}
+.linkchip:hover{border-color:var(--gold)}
+.backbtn{all:unset;cursor:pointer;color:var(--ink-dim);font-size:12.5px;margin-bottom:14px;display:inline-block}
+.backbtn:hover{color:var(--gold)}
+.npc-card{background:var(--panel-solid);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;cursor:pointer}
+.npc-card:hover{border-color:var(--gold)}
+.npc-card h3{margin:2px 0 4px;font-size:15.5px}
+.npc-card .role{color:var(--ink-dim);font-size:12px;margin-bottom:8px}
+.rep-block{margin-bottom:22px}
+.rep-block h3{font-size:15px;color:var(--ink);margin:0 0 4px}
+.rep-total{font-family:var(--mono);color:var(--gold);font-size:12px;margin-bottom:10px}
+.rep-tier{display:flex;gap:14px;padding:8px 0;border-bottom:1px dashed var(--line-soft);align-items:baseline;flex-wrap:wrap}
+.rep-tier .thresh{font-family:var(--mono);color:var(--gold-light);min-width:90px;font-size:12.5px}
+.rep-tier .quests{display:flex;flex-wrap:wrap;gap:6px}
+.tree{font-family:var(--mono);font-size:12.5px;line-height:1.9;white-space:pre;color:var(--ink-dim);overflow-x:auto}
+.tree b{color:var(--ink)}
+.tree .g{color:var(--olive-light)}
+.tree .r{color:var(--rust-light)}
+.tree .y{color:var(--gold-light)}
+.note-box{border:1px dashed var(--line);border-radius:var(--radius);padding:12px 14px;font-size:12.5px;color:var(--ink-dim);margin-top:10px;background:#ffffff04}
+.note-box.warn{border-color:var(--rust);color:#d9b9a3}
+.itemdb-entry{margin-bottom:6px}
+.itemdb-entry summary{cursor:pointer;padding:10px 14px;background:var(--panel-solid);border:1px solid var(--line);border-radius:var(--radius);font-size:13px;display:flex;justify-content:space-between;list-style:none}
+.itemdb-entry summary::-webkit-details-marker{display:none}
+.itemdb-entry summary .n{color:var(--ink);font-family:var(--mono)}
+.itemdb-entry summary .c{color:var(--ink-faint);font-size:11.5px}
+.itemdb-entry .body{padding:10px 16px;border:1px solid var(--line-soft);border-top:none;background:#ffffff03}
+.usage-row{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;color:var(--ink-dim)}
+.usage-row .tag{font-size:10px;padding:1px 6px;border-radius:8px;border:1px solid var(--line)}
+.usage-row .tag.req{color:var(--rust-light);border-color:var(--rust)}
+.usage-row .tag.rew{color:var(--green);border-color:var(--green)}
+.empty-msg{color:var(--ink-dim);font-size:13.5px;font-style:italic;padding:20px 0}
+table.datacheck{width:100%;border-collapse:collapse;font-size:12.5px}
+table.datacheck th{text-align:left;color:var(--gold);border-bottom:1px solid var(--line);padding:6px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+table.datacheck td{padding:6px 8px;border-bottom:1px solid var(--line-soft);color:var(--ink-dim)}
+.footer-note{margin-top:40px;padding-top:14px;border-top:1px solid var(--line-soft);color:var(--ink-faint);font-size:11px}
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:relative;height:auto;display:flex;flex-wrap:wrap;padding:10px}
+  nav.navlist{flex-direction:row;flex-wrap:wrap;padding:4px}
+  .brand{width:100%;border-bottom:none}
+  main{padding:18px}
+  .kv{grid-template-columns:130px 1fr}
+}
+
+
+/* ============================================================
+   F²Z WEBSITE LOOK – dark survival / green accents / red-white brand
+   ============================================================ */
+:root{
+  --bg:#080b09; --bg2:#0c110e; --panel:#101713ee; --panel-solid:#111914;
+  --line:#243028; --line-soft:#1c2720; --ink:#f1f4f1; --ink-dim:#9ba79f; --ink-faint:#657068;
+  --olive:#71862f; --olive-light:#a2bb4b; --rust:#a62c27; --rust-light:#d04b42;
+  --red:#b62925; --gold:#7f9838; --gold-light:#b0c95b; --green:#7f9838; --radius:8px;
+}
+body{background:radial-gradient(circle at 82% 8%,rgba(119,145,54,.08),transparent 28%),radial-gradient(circle at 8% 20%,rgba(166,44,39,.06),transparent 25%),linear-gradient(180deg,#080b09 0%,#0a0e0b 55%,#080b09 100%)}
+.sidebar{background:linear-gradient(180deg,#0b100d 0%,#0a0e0c 100%);box-shadow:10px 0 35px #0008}
+.brand{padding:0 16px 19px}.brand .f2{color:#f4f5f3;font-weight:800;font-size:13px}.brand h1{font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:1.1px}.brand .sub{color:var(--olive-light);font-weight:700}
+nav.navlist button{border-radius:6px;transition:.16s ease}nav.navlist button:hover{background:rgba(127,152,56,.09);color:#fff;transform:translateX(2px)}nav.navlist button.active{background:linear-gradient(90deg,rgba(127,152,56,.20),rgba(127,152,56,.04));color:#fff;border-left-color:var(--olive-light)}
+main{max-width:1480px}.viewtitle .f2{color:var(--rust-light);font-weight:800}
+.stat,.card,.section-block,.npc-card{background:linear-gradient(145deg,rgba(18,27,22,.98),rgba(12,18,15,.98));box-shadow:0 12px 30px #00000022;border-color:#27352c}
+.card,.npc-card{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.card:hover,.npc-card:hover{border-color:var(--olive-light);transform:translateY(-3px);box-shadow:0 14px 34px #0008,0 0 0 1px rgba(162,187,75,.08)}
+.card .qid,.npc-card .qid{color:var(--rust-light);font-weight:700}.badge{background:#0a0f0caa}.badge.final{border-color:var(--olive-light);color:var(--olive-light)}.badge.rep{border-color:#8aa23c;color:#b7ce62}.badge.illegal{border-color:var(--rust-light);color:#e16a60;background:rgba(182,41,37,.08)}.badge.chapter{border-color:#71862f;color:#b4cb66;background:rgba(113,134,47,.08)}
+.linkchip{border-color:#334236;color:var(--olive-light);background:#0b100d}.linkchip:hover{border-color:var(--olive-light);background:rgba(127,152,56,.10)}
+.dialog-block{border-left-color:var(--olive-light);background:linear-gradient(90deg,rgba(127,152,56,.06),rgba(255,255,255,.015))}.dialog-block .lbl{color:var(--olive-light)}
+input[type=text],select{background:#0b100d;border-color:#2a392f}input[type=text]:focus,select:focus{outline-color:var(--olive-light);border-color:var(--olive-light)}
+table.datacheck{width:100%;border:1px solid var(--line);border-collapse:collapse;background:#0c120e}table.datacheck th{background:#101914;color:var(--olive-light);padding:9px 10px}table.datacheck td{padding:9px 10px}
+.chain-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:#0b100d}table.chain-table{width:100%;border-collapse:collapse;min-width:1180px;font-size:12px}table.chain-table th{background:#121b16;color:var(--olive-light);text-align:left;padding:9px;border-bottom:1px solid #334236;text-transform:uppercase;font-size:10px;letter-spacing:.6px}table.chain-table td{padding:9px;vertical-align:top;border-bottom:1px solid var(--line-soft);color:var(--ink-dim);line-height:1.45}table.chain-table tr:hover td{background:rgba(127,152,56,.04)}table.chain-table .qname{color:var(--ink);font-weight:700}table.chain-table .repplus{font-family:var(--mono);color:var(--olive-light);white-space:nowrap}
+.chain-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}.chain-header h3{margin:0;color:#fff;font-size:17px}.chain-meta{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.7px}.status-open{color:#e1a19b}.status-done{color:var(--olive-light)}
+.hero-strip{border:1px solid #2a382e;background:linear-gradient(110deg,rgba(127,152,56,.13),rgba(14,20,16,.92) 55%,rgba(166,44,39,.09));padding:18px 20px;border-radius:10px;margin-bottom:20px}.hero-strip strong{color:#fff;font-size:14px}.hero-strip span{color:var(--ink-dim);font-size:12px}
+@media(max-width:900px){.chain-header{align-items:flex-start}.hero-strip{padding:14px}}
+
+</style>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="f2">F²Z • DAYZ</span>
+      <h1>Quest-System</h1>
+      <span class="sub">Spieler- & Adminübersicht</span>
+    </div>
+    <nav class="navlist" id="nav"></nav>
+  </aside>
+  <main>
+    <div class="view active" id="view-overview"></div>
+    <div class="view" id="view-npcs"></div>
+    <div class="view" id="view-npcdetail"></div>
+    <div class="view" id="view-quests"></div>
+    <div class="view" id="view-chains"></div>
+    <div class="view" id="view-questdetail"></div>
+    <div class="view" id="view-progression"></div>
+    <div class="view" id="view-reputation"></div>
+    <div class="view" id="view-items"></div>
+    <div class="view" id="view-repeatable"></div>
+    <div class="view" id="view-daily"></div>
+    <div class="view" id="view-group"></div>
+    <div class="view" id="view-illegal"></div>
+    <div class="view" id="view-board"></div>
+    <div class="view" id="view-dev"></div>
+    <div class="view" id="view-issues"></div>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   F²DayZ QUEST-DATEN
+   Quelle: F2DayZ_Quest_System_Master_fuer_Claude.md
+   Alle Werte, Items, Rewards, Dialoge, IDs 1:1 übernommen.
+   Fehlende Angaben sind explizit als "Noch nicht definiert",
+   "Im Aufbau" oder "Geplant" markiert – nichts wurde erfunden.
+   ============================================================ */
+
+const NPCS = [
+  {id:900, name:"Ältester Miroslav", role:"Dorfältester – Einstieg ins Questsystem", status:"final",
+   location:"Alexandria", coords:null, faction:null, loadout:null, defaultText:null,
+   questIds:[5000,5023,5001,5002,5009], totalRep:600,
+   notes:"Die Miroslav-Reihe bildet den Einstieg in das gesamte Quest-System."},
+  {id:903, name:"Lagermeister Boris Yankov", role:"Lagermeister", status:"final",
+   location:"Alexandria", coords:null, faction:null, loadout:null, defaultText:null,
+   questIds:[5004,5018,5019,5020,5021,5022], totalRep:1010,
+   notes:"Alle sechs Quests hängen direkt an 5023 und werden über Reputation freigeschaltet."},
+  {id:901, name:"Dr. Yevgenia Sokolova", role:"Dorfärztin", status:"final",
+   location:"Alexandria", coords:null, faction:null, loadout:null, defaultText:null,
+   questIds:[5100,5007,5010,5011,5012,5031,5032,5033,5008], totalRep:910, notes:null},
+  {
+ "id": 916,
+ "name": "Sergej",
+ "role": "Schwarzmarkt-Kontakt / Einstieg Untergrund-Netzwerk",
+ "status": "final",
+ "location": "Krest",
+ "coords": "156.900162, 427.044037, 10423.720703",
+ "faction": null,
+ "loadout": "SchwarzmarktDealerLoadout",
+ "defaultText": "„Sokolova hat dich geschickt? Dann zeig mal, was du dabei hast.“",
+ "questIds": [
+  5200,
+  5201,
+  5202
+ ],
+ "totalRep": null,
+ "notes": "Zentraler Einstieg in die illegale Hauptreihe. 5200 startet bei Sergej, 5201 endet bei Sergej, 5202 führt zu Mr. White."
+},
+  {id:911, name:"Lise Baumann", role:"Landwirtschaft", status:"final",
+   location:"Alexandria", coords:null, faction:null, loadout:null, defaultText:null,
+   questIds:[5024,5025,5026,5027,5028,5029,5030], totalRep:1350, notes:null},
+  {id:906, name:"Anton Vasilenko", role:"Jagd", status:"final",
+   location:"Alexandria", coords:null, faction:null, loadout:null, defaultText:null,
+   questIds:[5003,5005,5013,5014,5015,5016], totalRep:1250, notes:null},
+  {id:908, name:"Nastya Orlova", role:"Funkbetrieb", status:"final",
+   location:"Alexandria", coords:null, faction:null, loadout:null, defaultText:null,
+   questIds:[5034,5039,5035,5036,5037,5038,5040], totalRep:635, notes:null},
+  {id:907, name:"Mechaniker Grigori Federov", role:"Mechaniker (Werkstatt)", status:"final",
+   location:"Alexandria", coords:null, faction:null, loadout:null, defaultText:null,
+   questIds:[5041,5042,5043,5044], totalRep:null,
+   notes:"Übergibt die Reihe bei Quest 5044 an seinen Bruder Vitali „Ölfinger“ Federov."},
+  {id:921, name:"Vitali „Ölfinger“ Federov", role:"Mechaniker (Schrottplatz)", status:"final",
+   location:"Schrottplatz", coords:null, faction:null, loadout:null, defaultText:null,
+   questIds:[5045,5046,5047], totalRep:null,
+   notes:"Übernimmt die Mechaniker-Reihe ab Quest 5044/5045. Gesamt-Reputation der kombinierten Mechaniker-Reihe (907+921): 1300 Rep."},
+  {id:910, name:"Archivar Igor Chernov", role:"Archivar", status:"geplant",
+   location:"Alexandria", coords:"3691.99, 402.02, 5981.97", faction:"InvincibleObservers",
+   loadout:"SurvivorLoadout",
+   defaultText:"„Wissen ist das Einzige, was hier nicht verrottet. Bring mir, was du findest.“",
+   questIds:[], totalRep:null,
+   notes:"Ist bereits eine der 8 Stationen in Quest 5023. Aktuell keine eigene Quest und kein Turn-in-Ziel für eine eigene Reihe."},
+  {id:909, name:"Milizionär Timur Bek", role:"Miliz", status:"final",
+   location:"Alexandria", coords:null, faction:null, loadout:null, defaultText:null,
+   questIds:[5101,5102,5103,5104,5098,5105,5106,5099], totalRep:2100,
+   notes:"War als Station Nr. 6 bereits Teil von Quest 5023. Komplette Kette: 5101 → 5102 → 5103 → 5104 → 5098 → 5105 → 5106 → 5099. 5105 benötigt 5098 UND 5104 (Rep 1500+)."},
+  {id:912, name:"Schwarzes Brett", role:"Alltags-Quest-Hub", status:"final",
+   location:"Alexandria", coords:"3703.91, 403.02, 5960.60", faction:null, loadout:null,
+   defaultText:null, npcType:"ExpansionQuestBoardSmall", questIds:[5301,5302,5303,5304,5305,5306,5307,5308,5309,5310],
+   totalRep:null, repPerCycle:610,
+   notes:"Turn-in/Ziel von Quest 5002. 10 finale Daily-/Repeatable-Quests (5301–5310). Repeatable:1, IsDailyQuest:1, Autocomplete:1, QuestTurnInIDs: [] (keine Rückkehr zum Brett nötig), PreQuestIDs meist [5002] – Ausnahme 5310 ([5002,5105]). Theoretisch 610 Rep/Tag, wenn alle zehn an einem Zyklus abgeschlossen werden."},
+  {id:922, name:"Nikolaj Batya", role:"Miliz-Kontakt (Sanctuary)", status:"final", minor:true,
+   location:"Sanctuary", coords:null, questIds:[5104,5098], notes:"Geber/Turn-in innerhalb der Miliz-Reihe (5104 Turn-in, 5098 Geber/automatische Lieferung)."},
+  {id:923, name:"Alexei", role:"Miliz-Kontakt (Bohrinsel)", status:"final", minor:true,
+   location:"Bohrinsel", coords:null, questIds:[5106,5099], notes:"Geber/Turn-in innerhalb der Miliz-Reihe (5106 Turn-in, 5099 Geber/automatische Lieferung)."},
+  {id:913, name:"Krankenschwester Nadja", role:"Klinik-Kontakt (Turn-in)", status:"final", minor:true,
+   location:"Klinik Airfield Krasno", coords:null, questIds:[5012], totalRep:null, notes:null},
+  {id:914, name:"Krankenschwester Dasha", role:"Klinik-Kontakt (Turn-in)", status:"final", minor:true,
+   location:"Klinik Stroitel", coords:null, questIds:[5031], totalRep:null, notes:null},
+  {id:915, name:"Krankenschwester Natascha", role:"Klinik-Kontakt (Turn-in)", status:"final", minor:true,
+   location:"Klinik Vybor", coords:null, questIds:[5032], totalRep:null, notes:null},
+  {id:917, name:"Techniker Marek Vosko", role:"Funkturm-Techniker (Turn-in)", status:"final", minor:true,
+   location:"Funkturm Polonina", coords:null, questIds:[5036], totalRep:null, notes:null},
+  {id:918, name:"Techniker Pavlo Semak", role:"Funkturm-Techniker (Turn-in)", status:"final", minor:true,
+   location:"Funkturm Erbenka", coords:null, questIds:[5037], totalRep:null, notes:null},
+  {id:919, name:"Techniker Radoslav Kunc", role:"Funkturm-Techniker (Turn-in)", status:"final", minor:true,
+   location:"Funkturm Olsha", coords:null, questIds:[5038], totalRep:null, notes:null},
+  {id:920, name:"Lewis Brenner", role:"Pfandhaus-Kontakt (Turn-in)", status:"im-aufbau", minor:true,
+   location:"Metro / Pfandhaus", coords:null, questIds:[5040], totalRep:null,
+   notes:"Übergangs-Kontakt aus der Funkerin-Reihe (Quest 5040). Eigene Questreihe noch nicht geliefert."},
+  {
+ "id": 924,
+ "name": "Viktor „Ratte“ Malenko",
+ "role": "Kurier / versteckte Scheune",
+ "status": "final",
+ "location": "Versteckte Scheune",
+ "coords": "7251.193359, 179.928558, 12365.780273",
+ "faction": null,
+ "loadout": null,
+ "defaultText": null,
+ "questIds": [
+  5200,
+  5201
+ ],
+ "totalRep": null,
+ "notes": "Turn-in von 5200 und Questgeber von 5201."
+},
+  {
+ "id": 925,
+ "name": "Mikhail „Mr. White“ Orlov",
+ "role": "Produktion / Chemie / DrugRunning",
+ "status": "final",
+ "location": "Haus im Wald",
+ "coords": "2197.973633, 349.837067, 8364.888672",
+ "faction": null,
+ "loadout": null,
+ "defaultText": null,
+ "questIds": [
+  5202,
+  5203,
+  5204,
+  5205,
+  5206
+ ],
+ "totalRep": null,
+ "notes": "Qualitätsbesessener Produzent. Einführung in 5202; danach nur noch „Mr. White“ genannt."
+},
+  {
+ "id": 926,
+ "name": "Katya „Krähe“ Morozova",
+ "role": "Schmuggel / Wasserwege / illegale Fracht",
+ "status": "final",
+ "location": "Haus am See",
+ "coords": "13258.984375, 30.201698, 11565.803711",
+ "faction": null,
+ "loadout": null,
+ "defaultText": null,
+ "questIds": [
+  5206,
+  5207
+ ],
+ "totalRep": null,
+ "notes": "Wird in 5206 eingeführt; 5207 startet und endet direkt bei Krähe."
+}
+];
+
+// Stationen aus Quest 5023 ohne eigenes NPC-Profil / eigene Quests (keine Daten erfinden)
+const UNNAMED_STATIONS_5023 = ["Anton Vasilenko","Nastya Orlova","Lise Baumann"];
+
+function npc(id){return NPCS.find(n=>n.id===id);}
+function npcLabel(id){const n=npc(id);return n? (n.name+" ("+n.id+")") : ("NPC "+id);}
+
+/* ---------- QUESTS ---------- */
+const QUESTS = [
+
+{id:5000,title:"Willkommen in der Hölle von F²Dayz",npc:900,
+ giver:"Auto-Start beim Verbinden – kein Geber nötig",turnIn:npcLabel(900),
+ prereq:[],rep:0,repeat:"einmalig",cooldown:"–",
+ tags:["Travel"],
+ dialog:{an:"Man sagt, Alexandria sei einer der wenigen Orte, an denen noch so etwas wie Ordnung herrscht. Der Älteste Miroslav empfängt dort jeden, der neu in diese Gegend kommt. Wenn du wissen willst, wie es hier weitergeht, solltest du dich bei ihm vorstellen, <>.",
+  offen:"Der Älteste von Alexandria wartet noch immer darauf, dass du dich bei ihm vorstellst, <>. Lass ihn nicht unnötig warten.",
+  ab:"„Also bist du der Neue. Willkommen in Alexandria, <>.“ Miroslav mustert dich einen Moment schweigend und nickt schließlich. „Solange du dich an unsere Regeln hältst und deinen Teil beiträgst, wirst du hier keine Schwierigkeiten bekommen."},
+ objectiveText:"Reise nach Alexandria und sprich mit dem Ältesten Miroslav.",
+ objectiveExtra:["Reine Travel-Objective."],
+ delivery:null,
+ reward:{items:[{q:2,n:"BandageDressing"},{q:1,n:"WaterBottle"},{q:1,n:"SpaghettiCan"}],rep:50},
+ technical:["FollowUpQuest: 5001"],
+ note:"Die tatsächliche Kette läuft zunächst über 5023.",
+ status:"final"},
+
+{id:5023,title:"Rundgang durch Alexandria",npc:900,
+ giver:npcLabel(900),turnIn:npcLabel(900),
+ prereq:[5000],rep:0,repeat:"einmalig",cooldown:"–",
+ tags:["Travel","Sequential"],
+ dialog:{an:"Bevor wir darüber reden, was du für Alexandria tun kannst, solltest du erst einmal die Menschen kennenlernen, die diesen Ort am Leben halten. Geh durch das Lager, stell dich bei ihnen vor und hör dir an, was sie zu sagen haben, <>.",
+  offen:"Du hast noch nicht mit allen gesprochen, <>. Nimm dir die Zeit. Wenn du hier bleiben willst, solltest du wissen, mit wem du es zu tun hast.",
+  ab:"Gut. Jetzt kennen sie dein Gesicht, und du weißt, an wen du dich wenden kannst. Vertrauen entsteht hier nicht über Nacht, <> – aber das war ein Anfang."},
+ objectiveText:"8 Travel-Objectives nacheinander (SequentialObjectives:1):",
+ objectiveExtra:["1. Dr. Sokolova (901)","2. Boris Yankov (903)","3. Anton Vasilenko – keine weiteren Daten vorhanden",
+   "4. Grigori Federov (907)","5. Nastya Orlova – keine weiteren Daten vorhanden","6. Milizionär Timur Bek (909)",
+   "7. Igor Chernov (910)","8. Lise Baumann – keine weiteren Daten vorhanden"],
+ delivery:null,
+ reward:{items:[],rep:400,note:"Kein Item-Reward"},
+ technical:[], note:"Öffnet nach Abschluss die restlichen NPC-Questreihen in Alexandria.",
+ status:"final"},
+
+{id:5001,title:"Erste Handreichung",npc:900,
+ giver:npcLabel(900),turnIn:npcLabel(900),
+ prereq:[5023],rep:0,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"Du hast die Leute kennengelernt. Jetzt sehen wir, ob du auch bereit bist, deinen Teil zu tragen. Unsere Vorräte sind begrenzt, <>. Bring uns etwas Feuerholz, Wasser und eine brauchbare Säge. Dinge, die uns allen zugutekommen.",
+  offen:"Unser Lager füllt sich nicht von allein, <>. Wir brauchen das Material noch.",
+  ab:"Sehr gut. Genau so funktioniert eine Gemeinschaft: Jeder gibt etwas dazu, damit am Ende genug für alle da ist. Das war gute Arbeit, <>."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:12,n:"Firewood"},{q:2,n:"WaterBottle",note:"≥25%"},{q:1,n:"HandSaw"}],
+ reward:{items:[{q:1,n:"FOG_Bag_MRASAP_Grey"},{q:1,n:"Glock18C",note:"+Magazin"},{q:10,n:"9x19-Munition"}],rep:75},
+ technical:[], note:null, status:"final"},
+
+{id:5002,title:"Die Gemeinschaft",npc:900,
+ giver:npcLabel(900),turnIn:npcLabel(912)+" (Ziel/Abgabe)",
+ prereq:[5023,5001],rep:0,repeat:"einmalig",cooldown:"–",
+ tags:["Übergangsquest"],maxDistance:"1m",
+ dialog:{an:"Alexandria lebt davon, dass jeder seinen Teil beiträgt, <>. Sprich mit den Leuten, hilf ihnen bei ihren Aufgaben und wirf regelmäßig einen Blick auf das Schwarze Brett. Mit jeder erledigten Aufgabe wächst dein Ruf hier im Lager. Und glaub mir – die Leute merken sich, auf wen sie sich verlassen können. Je besser dein Ruf wird, desto eher vertrauen sie dir wichtigere Aufgaben an.",
+  offen:"Du hast dir das Schwarze Brett noch nicht angesehen, <>. Dort findest du weitere Aufgaben. Erledige sie, hilf den Leuten und arbeite an deinem Ruf – mit der Zeit werden dir überall in Alexandria neue Möglichkeiten offenstehen.",
+  ab:"Gut. Jetzt weißt du, wo du Arbeit findest. Hilf den Leuten, erfüll deine Aufgaben und mach dir einen Namen, <>. Je mehr Vertrauen du dir verdienst, desto mehr werden dir die Bewohner von Alexandria anvertrauen."},
+ objectiveText:"Ziel/Abgabe: Schwarzes Brett (912), MaxDistance 1m.", objectiveExtra:[],
+ delivery:null,
+ reward:{items:[{q:1,n:"SpaghettiCan"},{q:2,n:"BandageDressing"},{q:1,n:"WaterBottle"}],rep:25},
+ technical:["MaxDistance: 1m"], note:"Führt in das (noch im Aufbau befindliche) Schwarze-Brett-System ein.", status:"final"},
+
+{id:5009,title:"Sicherheit für alle",npc:900,
+ giver:npcLabel(900),turnIn:npcLabel(903),
+ prereq:[5002],rep:550,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"In letzter Zeit werden die Banditen in der Gegend dreister. Alexandria steht noch, weil wir unsere Mauern und Zäune nicht vernachlässigen. Boris braucht Material für die Befestigungen. Nimm die Lieferung und bring sie direkt zu ihm, <>.",
+  offen:"Boris wartet noch auf das Baumaterial, <>. Solange unsere Befestigungen Schwachstellen haben, ist hier niemand wirklich sicher.",
+  ab:"Boris hat mir bereits Bescheid gegeben. Die Befestigungen sind wieder in Ordnung. Gute Arbeit, <>. Vielleicht bist du inzwischen mehr als nur ein weiterer Fremder, der durch unsere Tore gekommen ist."},
+ objectiveText:"Delivery an Boris Yankov (903).", objectiveExtra:[],
+ delivery:[{q:50,n:"WoodenPlank"},{q:3,n:"NailBox"},{q:5,n:"BarbedWire"}],
+ reward:{items:[{q:1,n:"ExpansionCheese1"},{q:1,n:"ExpansionBread1"},{q:1,n:"Canteen"}],rep:50},
+ technical:[], note:null, status:"final"},
+
+/* ---------- BORIS YANKOV (903) ---------- */
+{id:5004,title:"Für die Gemeinschaft",npc:903,
+ giver:npcLabel(903),turnIn:npcLabel(903),
+ prereq:[5023],rep:0,repeat:"wiederholbar",cooldown:"Kein Cooldown",
+ tags:["Delivery"],
+ dialog:{an:"Ein Lager lebt vom Nachschub, <>. Was heute noch genug aussieht, kann morgen schon fehlen. Bring mir Fisch, Lumpen und Feuerholz – Dinge, die wir hier jeden Tag brauchen.",
+  offen:"Der Nachschub fehlt noch, <>. Solange hier Menschen leben, wird dieses Lager niemals wirklich voll sein.",
+  ab:"Gut. Alles wird eingelagert und verteilt, wo es gebraucht wird. Damit sind wir für die nächsten Tage wieder etwas besser aufgestellt."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:16,n:"CarpFilletMeat"},{q:30,n:"Rag"},{q:12,n:"Firewood"}],
+ reward:{items:[{q:2,n:"BakedBeansCan"},{q:1,n:"CanOpener"}],rep:50},
+ technical:[], note:null, status:"final"},
+
+{id:5018,title:"Inventur",npc:903,
+ giver:npcLabel(903),turnIn:npcLabel(903),
+ prereq:[5023],rep:0,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"Bevor ich hier vernünftig planen kann, muss ich wissen, worauf ich mich verlassen kann, <>. Uns fehlt noch einiges an Grundmaterial. Bring mir das Zeug, dann können wir das Lager ordentlich aufstellen.",
+  offen:"Für eine vernünftige Grundausstattung fehlt noch Material, <>. Ohne das kann ich hier keine brauchbare Inventur führen.",
+  ab:"Gut. Damit haben wir endlich eine solide Grundlage. Jetzt weiß ich wenigstens, womit ich arbeiten kann."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:10,n:"WoodenPlank"},{q:2,n:"NailBox"},{q:10,n:"WoodenLog"}],
+ reward:{items:[{q:2,n:"Matchbox"},{q:1,n:"Compass"},{q:1,n:"FishingRod"},{q:1,n:"Jig"}],rep:150},
+ technical:[], note:null, status:"final"},
+
+{id:5019,title:"Vorräte für den Winter",npc:903,
+ giver:npcLabel(903),turnIn:npcLabel(903),
+ prereq:[5023],rep:1000,repeat:"wiederholbar",cooldown:"Kein Cooldown",
+ tags:["Delivery"],
+ dialog:{an:"Nur von gefundenen Konserven können wir nicht ewig leben, <>. Deshalb bauen wir inzwischen selbst an. Kürbis, Tomaten, Paprika – was immer der Garten hergibt, landet früher oder später in unseren Vorräten.",
+  offen:"Wir brauchen noch mehr von der Ernte, <>. Je voller unsere Vorräte jetzt werden, desto weniger müssen wir uns später darauf verlassen, draußen etwas zu finden.",
+  ab:"Sehr gut. Frische Ernte und etwas für die Vorräte – damit kann ich arbeiten. Bring ruhig wieder etwas vorbei, wenn die nächste Ernte soweit ist."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:12,n:"Pumpkin"},{q:13,n:"Tomato"},{q:12,n:"GreenBellPepper"}],
+ reward:{items:[{q:2,n:"PumpkinSeedsPack"},{q:2,n:"TomatoSeedsPack"}],rep:60},
+ technical:[], note:null, status:"final"},
+
+{id:5020,title:"Erweiterung des Lagers",npc:903,
+ giver:npcLabel(903),turnIn:npcLabel(903),
+ prereq:[5023],rep:1000,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"Unser Vorrat wächst, aber die Lagerräume leider nicht mit, <>. Wir brauchen mehr Platz, bevor wir anfangen, uns gegenseitig über die Kisten zu stapeln. Besorg mir das Baumaterial für die Erweiterung.",
+  offen:"Die Erweiterung kann erst anfangen, wenn das Material vollständig da ist, <>. Uns fehlt noch einiges.",
+  ab:"Genau das haben wir gebraucht. Endlich wieder Platz, um Vorräte vernünftig zu lagern, statt alles irgendwo dazwischenzuquetschen."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:50,n:"WoodenPlank"},{q:16,n:"RA_Cinderblock"},{q:5,n:"MetalPlate"}],
+ reward:{items:[{q:1,n:"FOG_Bag_F4Terminator"}],rep:200},
+ technical:[], note:null, status:"final"},
+
+{id:5021,title:"Bestandskontrolle",npc:903,
+ giver:npcLabel(903),turnIn:npcLabel(903),
+ prereq:[5023],rep:2500,repeat:"taeglich",cooldown:"Täglich",
+ tags:["Delivery"],
+ dialog:{an:"Zeit für die nächste Bestandskontrolle, <>. Metall verschwindet schneller, als mir lieb ist, und Batterien brauchen wir ständig. Bring mir Nachschub, damit die Reserven nicht unter das Minimum fallen.",
+  offen:"Die Liste ist noch nicht vollständig, <>. Mir fehlen noch Teile für unsere Reserven.",
+  ab:"Gut. Jetzt stimmen Bestand und Liste wieder überein. So kann ich wenigstens planen, ohne morgen von einem leeren Regal überrascht zu werden."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:10,n:"MetalPlate"},{q:5,n:"BarbedWire"},{q:2,n:"Battery9V"}],
+ reward:{items:[{q:1,n:"RA_ClawHammer_Yellow"},{q:1,n:"RA_CodeLock"},{q:1,n:"mmg_equipment_locker_grey_kit"}],rep:50},
+ technical:[], note:null, status:"final"},
+
+{id:5022,title:"Der große Umbau",npc:903,
+ giver:npcLabel(903),turnIn:npcLabel(903),
+ prereq:[5023],rep:5000,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery","Kapitel-Abschluss"],
+ dialog:{an:"Du hast inzwischen oft genug bewiesen, dass ich mich auf dich verlassen kann, <>. Also machen wir es jetzt richtig. Das Lager soll nicht nur größer werden – wir bauen es grundlegend um. Dafür brauche ich eine Menge Material.",
+  offen:"Für so einen Umbau reicht kein halber Stapel Bretter, <>. Wir brauchen noch Material, bevor wir damit anfangen können.",
+  ab:"Verdammt, das war eine Menge Arbeit. Aber sieh dich um, <>. Aus unserem improvisierten Lager ist endlich etwas geworden, das diesen Namen auch verdient. Ohne deine Hilfe hätten wir das nicht geschafft."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:60,n:"WoodenPlank"},{q:5,n:"NailBox"},{q:20,n:"MetalPlate"},{q:15,n:"RA_Cinderblock"}],
+ reward:{items:[{q:1,n:"mmg_gun_rack_kit_green"},{q:1,n:"mmg_locker02_tan_kit"},{q:1,n:"mmg_fridge_kit_beige"},{q:1,n:"FOG_Bag_6ShBagT_BlackEMR"}],rep:500},
+ technical:[], note:"Kapitel-Abschluss der Boris-Yankov-Reihe. Gesamt-Reputation Boris: 1010 Rep.", status:"final"},
+
+/* ---------- DR. SOKOLOVA (901) ---------- */
+{id:5100,title:"Medizin für den Dorfarzt",npc:901,
+ giver:npcLabel(901),turnIn:npcLabel(901),
+ prereq:[5023],rep:0,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"Gut, dass du vorbeikommst, <>. Mir gehen Verbände und brauchbares Material für die Versorgung der Verletzten aus. Wenn wir hier weiter Menschen behandeln wollen, brauche ich dringend Nachschub.",
+  offen:"Ich brauche das Material noch, <>. Verletzungen warten nicht darauf, dass unsere Vorräte wieder voll sind.",
+  ab:"Sehr gut. Damit kann ich die nächsten Patienten vernünftig versorgen. Was für dich vielleicht nur ein paar Verbände sind, kann für jemanden hier den Unterschied machen."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:5,n:"BandageDressing"},{q:2,n:"InediaPain_HemostaticDressing"},{q:30,n:"Rag"}],
+ reward:{items:[{q:1,n:"BloodBagIV"},{q:1,n:"SalineBagIV"},{q:1,n:"mmg_solo_locker_medic_kit"}],rep:150},
+ technical:[], note:null, status:"final"},
+
+{id:5007,title:"Medizinische Vorräte",npc:901,
+ giver:npcLabel(901),turnIn:npcLabel(901),
+ prereq:[5023],rep:1000,repeat:"wiederholbar",cooldown:"Kein Cooldown",
+ tags:["Delivery"],
+ dialog:{an:"Die Vorräte verschwinden schneller, als ich sie auffüllen kann, <>. Verbände, Blutstillungsmittel, Schienen – von allem wird ständig etwas gebraucht. Bring mir Nachschub, bevor wir bei der nächsten Verletzung improvisieren müssen.",
+  offen:"Unsere medizinischen Vorräte sind immer noch zu knapp, <>. Ich möchte ungern entscheiden müssen, welcher Patient das letzte Verbandszeug bekommt.",
+  ab:"Danke. Damit sind die Regale wieder etwas besser gefüllt. Lange wird es vermutlich nicht reichen, aber im Moment verschafft es uns Luft."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:3,n:"InediaPain_HemostaticDressing"},{q:1,n:"InediaPain_SplintKit"},{q:5,n:"BandageDressing"}],
+ reward:{items:[{q:1,n:"InediaPain_Calcium"},{q:1,n:"VitaminBottle"},{q:1,n:"TetracyclineAntibiotics"}],rep:50},
+ technical:[], note:null, status:"final"},
+
+{id:5010,title:"Verbandsmaterial",npc:901,
+ giver:npcLabel(901),turnIn:npcLabel(901),
+ prereq:[5023],rep:1000,repeat:"wiederholbar",cooldown:"Kein Cooldown",
+ tags:["Delivery"],
+ dialog:{an:"Diesmal brauche ich vor allem Verbandsmaterial, <>. Saubere Verbände sind hier schneller aufgebraucht, als man denkt. Bring mir alles, was wir für die Erstversorgung verwenden können.",
+  offen:"Mir fehlt noch Verbandsmaterial, <>. Ohne ausreichend davon wird selbst eine einfache Wunde schnell zum Problem.",
+  ab:"Sehr gut. Genau das habe ich gebraucht. Damit kann ich wenigstens sicherstellen, dass bei der nächsten Verletzung etwas Sauberes griffbereit liegt."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:8,n:"BandageDressing"},{q:5,n:"Rag"},{q:2,n:"InediaPain_HemostaticDressing"}],
+ reward:{items:[{q:2,n:"InediaPain_Sorbifer"},{q:1,n:"iM7s_Backwoodz_3pk"}],rep:50},
+ technical:[], note:null, status:"final"},
+
+{id:5011,title:"Pharmazie",npc:901,
+ giver:npcLabel(901),turnIn:npcLabel(901),
+ prereq:[5007,5010],rep:2500,repeat:"taeglich",cooldown:"Täglich",
+ tags:["Delivery"],
+ dialog:{an:"Mit Verbänden allein komme ich nicht weit, <>. Für schwere Verletzungen und Notfälle brauche ich stärkere Medikamente. Tramadol, Tranexam, Metoclopramide – und wenn du Morphin oder Adrenalin findest, bring es ebenfalls mit. Solche Dinge sind inzwischen schwerer zu ersetzen als Gold.",
+  offen:"Die Medikamente fehlen mir noch, <>. Bei einem echten Notfall möchte ich nicht erst anfangen müssen, meine Schränke nach der letzten Ampulle zu durchsuchen.",
+  ab:"Ausgezeichnet. Genau solche Reserven brauchen wir für die schweren Fälle. Hoffen wir, dass ich sie nicht so schnell einsetzen muss."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:3,n:"InediaPain_Tramadol"},{q:3,n:"InediaPain_Tranexam"},{q:3,n:"InediaPain_Metoclopramide"},{q:3,n:"Morphine"},{q:3,n:"Epinephrine"}],
+ reward:{items:[{q:1,n:"iM7s_ThizzBoat"},{q:1,n:"iM7s_Wockhardt"},{q:1,n:"iM7s_pseudoephedrine"}],rep:60},
+ technical:[], note:null, status:"final"},
+
+{id:5012,title:"Liefere Material zur Klinik: Airfield Krasno",npc:901,
+ giver:npcLabel(901),turnIn:npcLabel(913),
+ prereq:[5100],rep:2500,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:null, noDialogReason:"Keine eigenen Dialogtexte geliefert.",
+ objectiveText:"Teil der „Rundreise der Kliniken“ (3 parallele Delivery-Quests).", objectiveExtra:[],
+ delivery:[{q:5,n:"BandageDressing"},{q:2,n:"Epinephrine"}],
+ reward:{items:[],rep:50,note:"Kein Item-Reward"},
+ technical:[], note:null, status:"final"},
+
+{id:5031,title:"Liefere Material zur Klinik: Stroitel",npc:901,
+ giver:npcLabel(901),turnIn:npcLabel(914),
+ prereq:[5100],rep:2500,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:null, noDialogReason:"Keine eigenen Dialogtexte geliefert.",
+ objectiveText:"Teil der „Rundreise der Kliniken“ (3 parallele Delivery-Quests).", objectiveExtra:[],
+ delivery:[{q:30,n:"Rag"},{q:1,n:"TetracyclineAntibiotics"},{q:2,n:"PurificationTablets"}],
+ reward:{items:[],rep:50,note:"Kein Item-Reward"},
+ technical:[], note:null, status:"final"},
+
+{id:5032,title:"Liefere Material zur Klinik: Vybor",npc:901,
+ giver:npcLabel(901),turnIn:npcLabel(915),
+ prereq:[5100],rep:2500,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:null, noDialogReason:"Keine eigenen Dialogtexte geliefert.",
+ objectiveText:"Teil der „Rundreise der Kliniken“ (3 parallele Delivery-Quests).", objectiveExtra:[],
+ delivery:[{q:5,n:"BandageDressing"},{q:1,n:"BloodTestKit"},{q:2,n:"InediaPain_Calcium"}],
+ reward:{items:[],rep:50,note:"Kein Item-Reward"},
+ technical:[], note:null, status:"final"},
+
+{id:5033,title:"Rundreise der Kliniken: Rückkehr",npc:901,
+ giver:npcLabel(901),turnIn:npcLabel(901),
+ prereq:[5012,5031,5032],rep:2500,repeat:"einmalig",cooldown:"–",
+ tags:["Travel"],
+ dialog:{an:"Die drei Außenstationen sind versorgt. Jetzt solltest du zu Dr. Sokolova nach Alexandria zurückkehren und ihr berichten, dass alle Lieferungen angekommen sind, <>.",
+  offen:"Dr. Sokolova wartet noch auf deine Rückmeldung, <>. Kehr nach Alexandria zurück und sag ihr, dass die Kliniken versorgt sind.",
+  ab:"Du bist wieder da. Gut. Ich habe bereits Nachricht von den anderen Stationen bekommen – überall ist das Material angekommen. Das war eine weite Strecke, <>. Danke, dass du dich darum gekümmert hast."},
+ objectiveText:"Travel zurück zu Dr. Sokolova.", objectiveExtra:[],
+ delivery:null,
+ reward:{items:[{q:1,n:"InediaPain_FirstAidCase_Black"}],rep:200},
+ technical:[], note:null, status:"final"},
+
+{id:5008,title:"Vertrauliches Gespräch",npc:901,
+ giver:npcLabel(901),turnIn:npcLabel(916),
+ prereq:[5007,5100,5012,5031,5032],rep:3000,repeat:"einmalig",cooldown:"–",
+ tags:["Übergangsquest","Illegal"],
+ dialog:{an:"<>... bleib noch einen Moment. Es gibt Dinge, über die ich nicht mit jedem hier spreche. Du hast inzwischen oft genug bewiesen, dass ich dir vertrauen kann. In Krest lebt ein Mann namens Sergej. Er beschafft Dinge, die du in keiner gewöhnlichen Apotheke finden wirst. Nimm das hier zu ihm. Wenn er sieht, was du ihm bringst, wird er wissen, dass ich dich geschickt habe.",
+  offen:"Sergej wartet in Krest auf dich, <>. Und ein Rat: Stell dort nicht mehr Fragen als nötig. Manche Geschäfte funktionieren besser, wenn man nicht jedes Detail kennt.",
+  ab:"Gut. Dann hast du Sergej kennengelernt. Von jetzt an weißt du selbst, wo du suchen musst, wenn die gewöhnlichen Wege nicht mehr ausreichen. Aber vergiss nicht, <> – manches, was dort gehandelt wird, sollte besser nicht offen in Alexandria herumliegen."},
+ objectiveText:"Abgabe bei Sergej (916) in Krest.", objectiveExtra:[],
+ delivery:[{q:1,n:"iM7s_erlenmeyer"},{q:1,n:"iM7s_Bong_Clear"},{q:10,n:"iM7s_Psilocybin_MysticVoid"},{q:1,n:"iM7s_cylinder_a"}],
+ reward:{items:[{q:2,n:"iM7s_Backwoodz_3pk"},{q:1,n:"iM7s_Blunt_BabyBatter"},{q:1,n:"iM7s_Blunt_Paragon"}],rep:250},
+ technical:[], note:"Übergangsquest von Dr. Sokolova zu Sergej – Einstieg in die illegale Questlinie. Gesamt-Reputation Dr. Sokolova: 910 Rep.",
+ status:"final"},
+
+/* ---------- GÄRTNERIN (911) ---------- */
+{id:5024,title:"Der erste Spatenstich",npc:911,
+ giver:npcLabel(911),turnIn:npcLabel(911),
+ prereq:[5023],rep:0,repeat:"einmalig",cooldown:"–",
+ tags:["Action"],
+ dialog:{an:"Vom Jagen und Plündern allein wird auf Dauer niemand satt, <>. Wer weiß, wie man etwas anbaut, hat wenigstens ein Stück seines Lebens selbst in der Hand. Komm, fang mit ein paar Samen an. Ich zeig dir, wie es geht.",
+  offen:"Na, <>? Die Erde wartet nicht ewig. Bring die Samen rein und lass ihnen ein bisschen Zeit.",
+  ab:"Siehst du? Gar nicht so schwer. Jetzt heißt es warten, pflegen und irgendwann ernten. Und wenn mehr wächst, als du selbst brauchst, weißt du ja, wo du mich findest."},
+ objectiveText:"Action-Objective: 18x Aktion „ActionPlantSeed“.", objectiveExtra:[],
+ delivery:null,
+ reward:{items:[{q:1,n:"FarmingHoe"},{q:1,n:"GardenLime"},{q:1,n:"PumpkinSeedsPack"},{q:1,n:"TomatoSeedsPack"},{q:1,n:"ZucchiniSeedsPack"},{q:1,n:"PepperSeedsPack"}],rep:150},
+ technical:["Aktion: ActionPlantSeed × 18"], note:null, status:"final"},
+
+{id:5025,title:"Ernte für Alexandria",npc:911,
+ giver:npcLabel(911),turnIn:npcLabel(911),
+ prereq:[5024],rep:0,repeat:"wiederholbar",cooldown:"Kein Cooldown",
+ tags:["Delivery"],
+ dialog:{an:"Dein erstes Beet sollte inzwischen etwas hergeben, <>. Bring mir einen Teil deiner Ernte und etwas Gartenkalk. Was du nicht selbst brauchst, können wir hier gut gebrauchen.",
+  offen:"Da fehlt noch etwas von der Ernte, <>. Ein Garten braucht Geduld – und manchmal eben noch eine zweite Runde.",
+  ab:"Das sieht doch ordentlich aus. Frisch aus der Erde und nicht aus irgendeiner verrosteten Dose. Hier, nimm das für den nächsten Anbau."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:5,n:"Pumpkin"},{q:5,n:"Tomato"},{q:5,n:"Zucchini"},{q:5,n:"GreenBellPepper"},{q:2,n:"GardenLime"}],
+ reward:{items:[{q:1,n:"PumpkinSeedsPack"},{q:1,n:"TomatoSeedsPack"},{q:1,n:"ZucchiniSeedsPack"},{q:1,n:"PepperSeedsPack"},{q:1,n:"Sickle"}],rep:100},
+ technical:[], note:null, status:"final"},
+
+{id:5026,title:"Platz zum Wachsen",npc:911,
+ giver:npcLabel(911),turnIn:npcLabel(911),
+ prereq:[5025],rep:0,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"Für ein paar Pflanzen reicht ein Stück offene Erde. Wenn du aber wirklich regelmäßig anbauen willst, brauchst du etwas Ordentliches, <>. Bring mir Holz, Nägel und einen Hammer. Dann sorgen wir dafür, dass deine Pflanzen einen festen Platz bekommen.",
+  offen:"Uns fehlt noch Material für das Pflanzbeet, <>. Mit ein paar losen Brettern lässt sich schlecht etwas Vernünftiges bauen.",
+  ab:"So gefällt mir das schon besser. Ein ordentliches Beet, etwas Pflege und genug Geduld – mehr braucht es für den Anfang nicht."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:15,n:"WoodenPlank"},{q:2,n:"NailBox"},{q:1,n:"Hammer"}],
+ reward:{items:[{q:2,n:"mmg_planter_box_kit"}],rep:200},
+ technical:[], note:null, status:"final"},
+
+{id:5027,title:"Unter Glas",npc:911,
+ giver:npcLabel(911),turnIn:npcLabel(911),
+ prereq:[5026],rep:1000,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"Du hast inzwischen verstanden, wie wichtig ein guter Anbauplatz ist, <>. Aber draußen sind wir immer noch vom Wetter abhängig. Mit einem Gewächshaus sieht die Sache anders aus. Dafür brauche ich allerdings deutlich mehr Material.",
+  offen:"Für ein Gewächshaus fehlt noch einiges, <>. Wenn wir das machen, dann richtig – sonst fällt uns das Ding beim ersten Sturm auseinander.",
+  ab:"Wunderschön. Jetzt haben Wind und Wetter deutlich weniger mitzureden. Damit können wir Pflanzen ziehen, um die wir uns draußen kaum kümmern könnten."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:50,n:"WoodenPlank"},{q:4,n:"NailBox"},{q:10,n:"MetalPlate"},{q:1,n:"Hammer"},{q:1,n:"HandSaw"}],
+ reward:{items:[{q:1,n:"mmg_greenhouse_kit"}],rep:350},
+ technical:[], note:null, status:"final"},
+
+{id:5028,title:"Erste Hanfsamen",npc:911,
+ giver:npcLabel(911),turnIn:npcLabel(911),
+ prereq:[5027],rep:1000,repeat:"einmalig",cooldown:"–",
+ tags:["Übergang Illegal","Illegal"],
+ dialog:{an:"<>... du hast inzwischen gezeigt, dass du mit Pflanzen umgehen kannst. Und, noch wichtiger, dass du nicht wegen jeder Kleinigkeit durch ganz Alexandria läufst und Geschichten erzählst. Es gibt da noch etwas, das in einem Gewächshaus ziemlich gut wächst. Besorg mir vorher ein paar Sachen – und was danach passiert, bleibt zwischen uns.",
+  offen:"Noch nicht alles beisammen, <>? Kein Problem. Bei manchen Dingen lohnt es sich, nichts zu überstürzen.",
+  ab:"Gut. Dann pass auf diese Samen besonders gut auf. Sie sind nicht gerade etwas, das ich hier offen auf dem Tisch liegen lassen würde. Und wem du davon erzählst, solltest du dir sehr genau überlegen."},
+ objectiveText:"Übergang zur illegalen Seite.", objectiveExtra:[],
+ delivery:[{q:3,n:"GardenLime"},{q:1,n:"Pitchfork"},{q:1,n:"FarmingHoe"}],
+ reward:{items:[{q:1,n:"iM7s_SeedPack_Gelato"}],rep:150},
+ technical:[], note:null, status:"final"},
+
+{
+ "id": 5029,
+ "title": "Bessere Sorten",
+ "npc": 911,
+ "giver": "Lise Baumann (911)",
+ "turnIn": "Lise Baumann (911)",
+ "prereq": [
+  5028
+ ],
+ "rep": 1000,
+ "repeat": "einmalig",
+ "cooldown": "–",
+ "tags": [
+  "Delivery",
+  "Illegal"
+ ],
+ "dialog": {
+  "an": "Na, <>? Sieht so aus, als hättest du aus den ersten Samen tatsächlich etwas gemacht. Gelato ist brauchbar, aber glaub mir – es gibt noch ganz andere Sorten. Zeig mir erst, dass du deine Ernte sauber hinbekommst. Dann gebe ich dir etwas Neues zum Ausprobieren.",
+  "offen": "Ich brauche noch etwas von deiner Ernte, <>. Wenn du mit den nächsten Sorten arbeiten willst, möchte ich vorher sehen, dass du die erste im Griff hast.",
+  "ab": "Sehr schön. Sauber gearbeitet. Hier – Blue Cookies und Cheetah Piss. Die Samen sind nicht leicht zu bekommen, also verschwende sie nicht."
+ },
+ "objectiveText": "Bringe 4x DryingBud Gelato und 4x DryingBud Blue Cookies.",
+ "objectiveExtra": [
+  "Die exakten technischen Classnames der beiden DryingBud-Items sind noch serverseitig zu verifizieren."
+ ],
+ "delivery": [
+  {
+   "q": 4,
+   "n": "DryingBud Gelato",
+   "note": "Classname offen"
+  },
+  {
+   "q": 4,
+   "n": "DryingBud Blue Cookies",
+   "note": "Classname offen"
+  }
+ ],
+ "reward": {
+  "items": [
+   {
+    "q": 1,
+    "n": "iM7s_SeedPack_BlueCookies"
+   },
+   {
+    "q": 1,
+    "n": "iM7s_SeedPack_CheetahPiss"
+   }
+  ],
+  "rep": 200
+ },
+ "technical": [],
+ "note": "Aktueller Spielerstand; technische DryingBud-Classnames noch aus der aktuellen Serverconfig bestätigen.",
+ "status": "final"
+},
+
+{
+ "id": 5030,
+ "title": "Sauber verpackt",
+ "npc": 911,
+ "giver": "Lise Baumann (911)",
+ "turnIn": "Lise Baumann (911)",
+ "prereq": [
+  5029
+ ],
+ "rep": 1000,
+ "repeat": "einmalig",
+ "cooldown": "–",
+ "tags": [
+  "Delivery",
+  "Kapitel-Abschluss",
+  "Illegal",
+  "Crafting"
+ ],
+ "dialog": {
+  "an": "Beim Anbauen hört die Arbeit nicht auf, <>.\n\nEine gute Ernte bringt wenig, wenn du nicht weißt, was du danach damit anfängst.\n\nDie Gärtnerin nimmt einen Bud in die Hand.\n\nDu hast inzwischen mit Gelato und Blue Cookies gearbeitet. Jetzt zeige ich dir noch, wie du daraus kleinere Portionen machst.\n\nSie legt ein Messer daneben.\n\nDas Rezept ist einfach.\n\nEin Bud und ein passendes Messer ergeben 14 Small Nugs derselben Sorte.\n\nGelato bleibt Gelato. Blue Cookies bleiben Blue Cookies.\n\nAlso nicht wild durcheinanderwerfen.\n\nSie sieht dich kurz an.\n\nIch will von dir jeweils dreißig Stück.\n\n30 Small Nugs Gelato und 30 Small Nugs Blue Cookies.\n\nDafür musst du deine Buds entsprechend verarbeiten.\n\nWenn du das sauber hinbekommst, habe ich dir über den Anbau und die Verarbeitung wirklich alles gezeigt, was ich kann.",
+  "offen": "Noch nicht genug vorbereitet, <>.\n\nEin Bud mit einem passenden Messer ergibt 14 Small Nugs derselben Sorte.\n\nIch brauche 30 Gelato Small Nugs und 30 Blue Cookies Small Nugs.\n\nUnd denk dran – die Sorten nicht mischen.",
+  "ab": "Sehr schön.\n\nDie Gärtnerin nimmt sich ein paar der Small Nugs und betrachtet sie.\n\nGelato sauber getrennt. Blue Cookies ebenfalls.\n\nGenau so soll es sein.\n\nAus einem guten Bud wird mit einem passenden Messer schnell eine brauchbare kleinere Portion – solange man weiß, was man tut.\n\nSie nimmt einen der Small Nugs in die Hand.\n\nUnd bevor du gehst, noch ein letztes Rezept.\n\nSie legt eine Backwoodz Cigar daneben.\n\nEine Backwoodz Cigar und drei Small Nugs derselben Sorte ergeben einen gerollten Blunt.\n\nDrei Nugs. Eine Sorte.\n\nGelato bleibt Gelato. Blue Cookies bleiben Blue Cookies.\n\nSie schiebt dir die Backwoodz-Packungen zu.\n\nDamit kannst du es selbst ausprobieren.\n\nAnbauen, ernten, verarbeiten und am Ende sogar etwas daraus machen.\n\nMehr muss ich dir darüber wohl nicht mehr beibringen, <>.\n\nDer Rest liegt jetzt bei dir."
+ },
+ "objectiveText": "Stelle 30 Gelato Small Nugs und 30 Blue Cookies Small Nugs her und bring sie der Gärtnerin.",
+ "objectiveExtra": [
+  "Rezept: 1 Bud + passendes Vanilla-Messer = 14 Small Nugs derselben Sorte.",
+  "Nach Abschluss gelernt: 1 Backwoodz Cigar + 3 Small Nugs derselben Sorte = 1 Blunt derselben Sorte.",
+  "Voraussetzung für 5203."
+ ],
+ "delivery": [
+  {
+   "q": 30,
+   "n": "iM7s_SmallNug_Gelato"
+  },
+  {
+   "q": 30,
+   "n": "iM7s_SmallNug_BlueCookies"
+  }
+ ],
+ "reward": {
+  "items": [
+   {
+    "q": 2,
+    "n": "iM7s_Backwoodz_3pk"
+   }
+  ],
+  "rep": 200
+ },
+ "technical": [
+  "Small Nugs werden nicht automatisch gegeben; Spieler stellt sie selbst her."
+ ],
+ "note": "Kapitel-Abschluss der Gärtnerin-Reihe. Gesamt-Reputation Gärtnerin: 1350 Rep.",
+ "status": "final"
+},
+
+/* ---------- JÄGER (906) ---------- */
+{id:5003,title:"Frisches Fleisch",npc:906,
+ giver:npcLabel(906),turnIn:npcLabel(906),
+ prereq:[5023],rep:0,repeat:"wiederholbar",cooldown:"Kein Cooldown",
+ tags:["Delivery"],
+ dialog:{an:"Wenn du draußen sowieso unterwegs bist, kannst du dich auch nützlich machen, <>. Kaninchen, Fuchs – was du findest. Bring mir brauchbares Fleisch, Knochen und Gedärme. Hier wird nichts verschwendet.",
+  offen:"Na, <>? Noch nichts Brauchbares vor die Flinte bekommen? Ich brauche die Beute noch.",
+  ab:"Saubere Arbeit. Fleisch für den Topf, der Rest wird ebenfalls verwertet. Genau so jagt man, wenn man nichts verschwenden kann."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:5,n:"RabbitLegMeat"},{q:5,n:"FoxSteakMeat"},{q:10,n:"Bone"},{q:2,n:"Guts"}],
+ reward:{items:[],rep:50,note:"Kein Item-Reward"},
+ technical:[], note:null, status:"final"},
+
+{id:5005,title:"Schlachtvieh",npc:906,
+ giver:npcLabel(906),turnIn:npcLabel(906),
+ prereq:[5023],rep:0,repeat:"wiederholbar",cooldown:"Kein Cooldown",
+ tags:["Delivery"],
+ dialog:{an:"Nicht jede Mahlzeit muss aus dem Wald kommen, <>. Vieh bringt mehr Fleisch auf einmal und versorgt uns länger. Bring mir brauchbare Stücke, Knochen und Innereien.",
+  offen:"Ich brauche noch mehr vom Vieh, <>. Ein halbleerer Vorrat bringt uns nicht weit.",
+  ab:"Das reicht erstmal. Gute Ausbeute und kaum etwas davon geht verloren. So muss es sein."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:10,n:"CowSteakMeat"},{q:10,n:"PigSteakMeat"},{q:15,n:"Bone"},{q:3,n:"Guts"}],
+ reward:{items:[],rep:50,note:"Kein Item-Reward"},
+ technical:[], note:null, status:"final"},
+
+{id:5013,title:"Fell und Leder",npc:906,
+ giver:npcLabel(906),turnIn:npcLabel(906),
+ prereq:[5023],rep:0,repeat:"wiederholbar",cooldown:"Kein Cooldown",
+ tags:["Delivery"],
+ dialog:{an:"Ein guter Jäger nimmt nicht nur das Fleisch mit, <>. Felle und Leder sind genauso wertvoll – für Kleidung, Ausrüstung und Reparaturen. Bring mir brauchbare Stücke.",
+  offen:"Mir fehlen noch Felle und Leder, <>. Wenn du schon jagst, dann nutz das Tier auch richtig.",
+  ab:"Gute Qualität. Damit kann man arbeiten. Hier – hast du dir verdient."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:2,n:"CowPelt"},{q:2,n:"SheepPelt"},{q:8,n:"TannedLeather"}],
+ reward:{items:[{q:1,n:"My_DF_Weapons_Melees_Executor2"},{q:1,n:"My_DF_Weapons_Melees_ThieveSea"}],rep:50},
+ technical:[], note:null, status:"final"},
+
+{id:5014,title:"Der Hirsch",npc:906,
+ giver:npcLabel(906),turnIn:npcLabel(906),
+ prereq:[5023],rep:1000,repeat:"einmalig",cooldown:"–",
+ tags:["Target"],
+ dialog:{an:"Fleisch anschleppen kann jeder, der lange genug sucht, <>. Aber ein Hirsch lässt dich nicht einfach an sich heran. Wenn du wirklich jagen kannst, dann zeig es mir. Fünf Stück. Sauber erlegt.",
+  offen:"Fünf Hirsche waren abgemacht, <>. Du bist noch nicht fertig.",
+  ab:"Nicht schlecht. Einen Hirsch zu erwischen ist eine Sache – fünf sind kein Zufall mehr. Du kannst tatsächlich mit einer Waffe umgehen."},
+ objectiveText:"Target-Objective: 5x Hirsch (Animal_CervusElaphus / _F).", objectiveExtra:[],
+ delivery:null,
+ reward:{items:[{q:1,n:"My_DF_Weapons_Snipers_M700"},{q:1,n:"LongrangeOptic"},{q:1,n:"FOG_GhillieAtt_Pine"},{q:1,n:"My_DF_Weapons_Snipers_M700_5RndMag"},{q:1,n:"My_DF_Weapons_Attachments_barrel_R93Short"}],rep:200},
+ technical:["Ziel: Animal_CervusElaphus / Animal_CervusElaphus_F"], note:null, status:"final"},
+
+{id:5015,title:"Die Wölfe",npc:906,
+ giver:npcLabel(906),turnIn:npcLabel(906),
+ prereq:[5014],rep:2500,repeat:"einmalig",cooldown:"–",
+ tags:["Target"],
+ dialog:{an:"Hirsche laufen weg. Wölfe kommen auf dich zu – das ist ein Unterschied, <>. In der Gegend zieht ein Rudel herum und wird langsam zu dreist. Dünn es aus. Zehn sollten reichen, damit der Rest Abstand hält.",
+  offen:"Die Wölfe sind noch immer da draußen, <>. Solange das Rudel groß genug ist, bleibt es eine Gefahr.",
+  ab:"Gut. Das Rudel wird sich eine Weile von den Leuten fernhalten. Gegen Wölfe bestehen nicht viele so ruhig wie gegen Wild. Das merke ich mir."},
+ objectiveText:"Target-Objective: 10x Wolf (Animal_CanisLupus_Grey / _White).", objectiveExtra:[],
+ delivery:null,
+ reward:{items:[{q:1,n:"My_DF_Weapons_Shotguns_Citori725"},{q:1,n:"Handguard Citori725_Tac"},{q:1,n:"Stock Citori725Tac"},{q:1,n:"Trigger 725Twostage"},{q:1,n:"Muzzle Citori725"},{q:1,n:"AmmoBox 12Gauge_Dragon_100Rnd"},{q:1,n:"My_DF_Weapons_Pistols_Shockpistol"}],rep:300},
+ technical:["Ziel: Animal_CanisLupus_Grey / Animal_CanisLupus_White"], note:null, status:"final"},
+
+{id:5016,title:"Der Bär",npc:906,
+ giver:npcLabel(906),turnIn:npcLabel(906),
+ prereq:[5015],rep:5000,repeat:"einmalig",cooldown:"–",
+ tags:["Target","Kapitel-Abschluss"],
+ dialog:{an:"Du hast Hirsche gejagt und ein Wolfsrudel ausgedünnt. Also erspare ich dir jetzt die leichten Aufgaben, <>. Im Wald streift ein Bär herum. Groß, aggressiv und viel zu nah an unseren Wegen. Selbst ich würde mir zweimal überlegen, ihm allein nachzugehen. Wenn du es trotzdem versuchen willst – dann geh vorbereitet.",
+  offen:"Der Bär lebt noch, <>. Unterschätz ihn nicht. Ein einziger Fehler, und du wirst Teil des Waldes.",
+  ab:"Du hast ihn tatsächlich erwischt. Einen Bären allein zur Strecke zu bringen, verlangt mehr als nur eine ruhige Hand. Ab heute muss mir niemand mehr erzählen, dass du kein Jäger bist. Nimm das – du hast es dir verdient."},
+ objectiveText:"Target-Objective: 1x Bär (Animal_UrsusArctos).", objectiveExtra:[],
+ delivery:null,
+ reward:{items:[{q:1,n:"My_DF_Weapons_Snipers_M82"},{q:1,n:"Optic ThermalAdditive"},{q:1,n:"Optic IndicatorAdditive"},{q:1,n:"Flashkill"},{q:1,n:"Stock M82LT"},{q:1,n:"Handguard M82_Short"},{q:1,n:"Bipod M82_Bip"},{q:1,n:"My_DF_Weapons_Snipers_M82_5RndMag"}],rep:600},
+ technical:["Ziel: Animal_UrsusArctos"], note:"Kapitel-Abschluss der Jäger-Reihe. Gesamt-Reputation Jäger: 1250 Rep.", status:"final"},
+
+/* ---------- FUNKERIN (908) ---------- */
+{id:5034,title:"Strom für den Sender",npc:908,
+ giver:npcLabel(908),turnIn:npcLabel(908),
+ prereq:[5023],rep:500,repeat:"wiederholbar",cooldown:"Kein Cooldown",
+ tags:["Delivery"],
+ dialog:{an:"Der beste Sender der Welt bringt uns nichts, wenn ihm der Strom ausgeht, <>. Batterien gehen hier schneller drauf, als mir lieb ist. Bring mir Nachschub und ein Ladegerät, damit ich die Geräte weiter betreiben kann.",
+  offen:"Mir fehlt noch die Stromversorgung, <>. Wenn der Sender ausfällt, sind wir für eine Weile taub.",
+  ab:"Sehr gut. Damit kann ich den Betrieb erstmal aufrechterhalten. Solange der Sender läuft, wissen wir wenigstens, was da draußen passiert."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:3,n:"Battery9V"},{q:1,n:"BatteryCharger"}],
+ reward:{items:[{q:1,n:"SpaghettiCan"},{q:1,n:"WaterBottle"}],rep:50},
+ technical:[], note:null, status:"final"},
+
+{id:5039,title:"Ausrüstung für den Funkbetrieb",npc:908,
+ giver:npcLabel(908),turnIn:npcLabel(908),
+ prereq:[5034],rep:800,repeat:"wiederholbar",cooldown:"Kein Cooldown",
+ tags:["Delivery"],
+ dialog:{an:"Strom allein reicht nicht, <>. Die Geräte werden ständig herumgetragen, beschädigt oder notdürftig geflickt. Ich brauche ein Case, ein paar Handfunkgeräte und genügend Klebeband, damit mir der Funkbetrieb nicht Stück für Stück auseinanderfällt.",
+  offen:"Für den Funkbetrieb fehlt mir noch Ausrüstung, <>. Ohne Ersatzmaterial wird aus einer kleinen Störung schnell ein kompletter Ausfall.",
+  ab:"Genau das habe ich gebraucht. Damit kann ich die Geräte schützen, austauschen und zur Not wieder zusammenflicken. Gute Arbeit, <>."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:1,n:"SmallProtectorCase"},{q:2,n:"PersonalRadio"},{q:5,n:"DuctTape"}],
+ reward:{items:[{q:1,n:"My_DF_Weapons_Pistols_Shockpistol"},{q:2,n:"My_DF_Weapons_Pistols_Shockpistol_2RndMag"}],rep:60},
+ technical:[], note:null, status:"final"},
+
+{id:5035,title:"Reichweite verbessern",npc:908,
+ giver:npcLabel(908),turnIn:npcLabel(908),
+ prereq:[5039],rep:1500,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"Der Sender läuft stabil, aber unsere Reichweite ist noch miserabel, <>. Zu oft bekomme ich nur Rauschen oder halbe Sätze herein. Mit etwas Elektrowerkzeug, Kabel und einem weiteren Funkgerät kann ich die Anlage aufrüsten.",
+  offen:"Für die Aufrüstung fehlt mir noch Material, <>. Solange das nicht da ist, bleibt hinter dem Rauschen vieles verborgen.",
+  ab:"Das sollte einen deutlichen Unterschied machen. Das Signal ist sauberer und die Reichweite größer. Vielleicht hören wir jetzt endlich auch die Stationen, die bisher außerhalb unserer Reichweite lagen."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:1,n:"ElectronicRepairKit"},{q:2,n:"MetalWire"},{q:1,n:"PersonalRadio"}],
+ reward:{items:[{q:1,n:"TruckBattery"},{q:2,n:"Battery9V"}],rep:200},
+ technical:[], note:null, status:"final"},
+
+{id:5036,title:"Funkturm Polonina",npc:908,
+ giver:npcLabel(908),turnIn:npcLabel(917),
+ prereq:[5035],rep:1500,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"Seit ein paar Tagen kommt vom Polonina-Turm kaum noch ein brauchbares Signal herein, <>. Marek Vosko ist bereits vor Ort, aber ihm fehlt Material für die Reparatur. Bring ihm, was er braucht.",
+  offen:"Marek wartet am Polonina-Turm noch auf das Material, <>. Solange der Turm ausfällt, fehlt uns dort ein wichtiges Stück Reichweite.",
+  ab:"Das Signal von Polonina ist wieder da – klar und stabil. Gute Arbeit, <>. Ein blinder Fleck weniger."},
+ objectiveText:"Abgabe bei Techniker Marek Vosko (917), Funkturm Polonina.", objectiveExtra:[],
+ delivery:[{q:1,n:"ElectronicRepairKit"},{q:1,n:"DuctTape"},{q:2,n:"Battery9V"}],
+ reward:{items:[{q:2,n:"RA_CodeLock"}],rep:75},
+ technical:[], note:null, status:"final"},
+
+{id:5037,title:"Funkturm Erbenka",npc:908,
+ giver:npcLabel(908),turnIn:npcLabel(918),
+ prereq:[5035],rep:1500,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"Erbenka macht ebenfalls Probleme, <>. Pavlo Semak versucht den Turm am Leben zu halten, aber ohne Ersatzmaterial kommt er nicht weiter. Bring ihm die Sachen und hilf uns, die Verbindung wiederherzustellen.",
+  offen:"Pavlo wartet noch auf das Material für Erbenka, <>. Der Turm bleibt solange praktisch nutzlos.",
+  ab:"Erbenka sendet wieder. Das Signal ist nicht schön, aber stabil – und darauf kommt es an. Gute Arbeit, <>."},
+ objectiveText:"Abgabe bei Techniker Pavlo Semak (918), Funkturm Erbenka.", objectiveExtra:[],
+ delivery:[{q:1,n:"ElectronicRepairKit"},{q:2,n:"Rope"},{q:1,n:"BatteryCharger"}],
+ reward:{items:[{q:2,n:"iM7s_Brake_Fluid"},{q:1,n:"iM7s_Battery_Acid_01"}],rep:75},
+ technical:[], note:null, status:"final"},
+
+{id:5038,title:"Funkturm Olsha",npc:908,
+ giver:npcLabel(908),turnIn:npcLabel(919),
+ prereq:[5035],rep:1500,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"Olsha ist der letzte große blinde Fleck in unserem Netz, <>. Radoslav Kunc ist dort und weiß, was zu tun ist – ihm fehlt nur das nötige Material. Wenn wir diesen Turm wieder ans Netz bekommen, sieht die Lage deutlich besser aus.",
+  offen:"Radoslav wartet noch am Olsha-Turm auf dich, <>. Solange der nicht läuft, bleibt eine Lücke in unserem Funknetz.",
+  ab:"Olsha ist wieder online. Damit haben wir alle drei Türme zurück im Netz. Jetzt kann ich endlich wieder deutlich weiter lauschen als bis zum nächsten Hügel."},
+ objectiveText:"Abgabe bei Techniker Radoslav Kunc (919), Funkturm Olsha.", objectiveExtra:[],
+ delivery:[{q:1,n:"PersonalRadio"},{q:1,n:"CarBattery"},{q:2,n:"MetalWire"}],
+ reward:{items:[{q:1,n:"mmg_palette_storage_kit"},{q:1,n:"mmg_fridge_kit_blue"}],rep:75},
+ technical:[], note:null, status:"final"},
+
+{id:5040,title:"Der Kontakt",npc:908,
+ giver:npcLabel(908),turnIn:npcLabel(920),
+ prereq:[5036,5037,5038],rep:1500,repeat:"einmalig",cooldown:"–",
+ tags:["Übergangsquest","Illegal"],
+ dialog:{an:"Seit die Türme wieder laufen, bekomme ich deutlich mehr mit als vorher, <>. Nicht alles davon gehört auf einen offiziellen Kanal. Über eine dieser Verbindungen bin ich auf einen Mann namens Lewis Brenner gestoßen. Er sitzt bei der Metro und besorgt Dinge, die du auf keinem gewöhnlichen Markt findest. Bring ihm das hier. Dann weiß er, dass du über den richtigen Kontakt kommst.",
+  offen:"Lewis wartet bei der Metro auf dich, <>. Wenn du dort bist, erwähn meinen Namen besser nicht lauter als nötig. Manche Kontakte bleiben länger nützlich, wenn nicht jeder von ihnen weiß.",
+  ab:"Dann hast du Lewis also gefunden. Gut. Jetzt kennst du den Weg zum Pfandhaus – und ab hier entscheidest du selbst, welche Geschäfte du dort machst."},
+ objectiveText:"Abgabe bei Lewis Brenner, Metro (920).", objectiveExtra:[],
+ delivery:[{q:1,n:"ExpansionCircuitBoard_MK1"},{q:1,n:"BaseRadio"}],
+ reward:{items:[],rep:100,note:"Kein Item-Reward"},
+ technical:[], note:"Übergangsquest von der Funkerin zu Lewis Brenner/Pfandhaus – Einstieg in die illegale Questlinie. Gesamt-Reputation Funkerin: 635 Rep.",
+ status:"final"},
+
+/* ---------- MECHANIKER GRIGORI FEDEROV (907) → VITALI (921) ---------- */
+{id:5041,title:"Werkstattbedarf",npc:907,
+ giver:npcLabel(907),turnIn:npcLabel(907),
+ prereq:[5023],rep:0,repeat:"wiederholbar",cooldown:"Kein Cooldown",
+ tags:["Delivery"],
+ dialog:{an:"Wenn du dich hier öfter rumtreiben willst, kannst du dich auch gleich nützlich machen, <>. In einer Werkstatt verschwinden Lumpen, Sprit und Werkzeug schneller als Bier bei einem Mechanikertreffen. Bring mir ein paar brauchbare Sachen. Müssen nicht schön sein – schön fährt sowieso nicht.",
+  offen:"Mir fehlt immer noch Werkstattbedarf, <>. Lumpen, Sprit, Werkzeug – irgendwas davon liegt da draußen immer rum. Meistens direkt neben einem Auto, das nie wieder fahren wird.",
+  ab:"Ja, genau so was brauch ich. Damit kann ich wenigstens wieder arbeiten, ohne alles mit dem Ärmel abzuwischen. Hier, nimm das Flickzeug. Glaub mir: Reifen gehen immer genau dann kaputt, wenn weit und breit keine Werkstatt in Sicht ist."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:12,n:"Rag"},{q:1,n:"CanisterGasoline"},{q:1,n:"Hacksaw"}],
+ reward:{items:[{q:1,n:"TireRepairKit"}],rep:50},
+ technical:[], note:null, status:"final"},
+
+{id:5042,title:"Werkzeug für die Werkbank",npc:907,
+ giver:npcLabel(907),turnIn:npcLabel(907),
+ prereq:[5041],rep:200,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"Mit Lumpen und Sprit krieg ich viel hin, <>. Aber irgendwann muss selbst ich zugeben, dass ein Schraubenschlüssel besser funktioniert als ein Stein. Bring mir ordentliches Werkzeug: Schraubenschlüssel, Schraubenzieher, Zangen – alles, womit man Dinge auseinanderbekommt und mit etwas Glück wieder zusammen.",
+  offen:"Das Werkzeug ist noch nicht komplett, <>. Ich kann viel improvisieren, aber einen Bolzen mit den Zähnen festziehen sieht nur in Geschichten gut aus.",
+  ab:"Ah, sieh an. Richtiges Werkzeug. Fast schon Luxus. Damit kann man arbeiten, ohne jedes zweite Gewinde persönlich zu beleidigen. Ich hab hinten noch ein paar Fahrzeugteile gefunden. Nimm sie mit – bevor ich wieder vergesse, wo ich sie hingelegt hab."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:1,n:"Wrench"},{q:1,n:"Screwdriver"},{q:1,n:"Pliers"},{q:1,n:"PipeWrench"},{q:1,n:"LugWrench"}],
+ reward:{items:[{q:1,n:"CarBattery"},{q:1,n:"SparkPlug"},{q:2,n:"HeadlightH7"}],rep:100},
+ technical:[], note:null, status:"final"},
+
+{id:5043,title:"Strom und Ersatzteile",npc:907,
+ giver:npcLabel(907),turnIn:npcLabel(907),
+ prereq:[5042],rep:200,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"Werkzeug haben wir. Jetzt fehlt uns nur noch das Übliche: Strom, Draht und genug Metall, um aus Schrott wieder neuen Schrott zu bauen, <>. Besorg mir einen Generator, etwas Draht und ein paar brauchbare Stücke Metall. Wie es aussieht, ist mir egal. Rost ist schließlich auch nur Farbe mit Charakter.",
+  offen:"Generator, Draht und Schrott, <>. Solange das Zeug fehlt, steht hier die Hälfte still. Und eine stehende Werkstatt ist nur ein sehr dreckiger Lagerraum.",
+  ab:"Sehr gut. Jetzt sieht das hier langsam tatsächlich nach einer Werkstatt aus und nicht mehr nach einem Unfall mit Werkzeug. Hier, nimm die Lötlampe und die Gaskartuschen. Die wirst du gleich brauchen. Für das nächste Projekt ist mir hier nämlich zu wenig Platz. Mein Bruder Vitali hat draußen am Schrottplatz genug davon. Zu viel, wenn du mich fragst."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:1,n:"MetalWire"},{q:1,n:"PowerGenerator"},{q:6,n:"scrapmetal"}],
+ reward:{items:[{q:1,n:"Blowtorch"},{q:2,n:"LargeGasCanister"}],rep:200},
+ technical:[], note:null, status:"final"},
+
+{id:5044,title:"Die Werkbank",npc:907,
+ giver:npcLabel(907),turnIn:npcLabel(921),
+ prereq:[5043],rep:300,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery","Übergangsquest"],
+ dialog:{an:"Jetzt wird's interessant, <>. Für eine vernünftige Werkbank fehlt mir hier vor allem eins: Platz. Mein Bruder Vitali hat davon mehr als genug. Naja... wenn man die alten Achsen, Motorblöcke und den ganzen anderen Müll nicht mitzählt. Bring ihm Metallplatten, Schrott und die Lötlampe. Sag ihm, dass du von mir kommst. Dann motzt er vielleicht nur halb so viel.",
+  offen:"Vitali wartet am Schrottplatz auf das Material, <>. Und wenn er behauptet, ich hätte ihm noch Geld geschuldet: Hör einfach nicht hin.",
+  ab:"Ah, Grigori schickt dich also. Hätte ich mir denken können. Immer wenn Arbeit anfällt, findet mein Bruder plötzlich jemanden mit zwei gesunden Armen. Na gut – das Material taugt. Ich hab dir daraus alles für einen Werkbanksatz zusammengestellt. Bau das Ding auf. Danach kannst du anfangen, richtig Unsinn mit Metall zu machen."},
+ objectiveText:"Delivery, Abgabe bei 921 (Vitali). Übergang zu Vitali.", objectiveExtra:[],
+ delivery:[{q:10,n:"MetalPlate"},{q:5,n:"scrapmetal"},{q:1,n:"Blowtorch"}],
+ reward:{items:[{q:1,n:"Zen_CarWorkbenchKit"}],rep:250},
+ technical:[], note:"Übergangsquest von Grigori Federov zu Vitali „Ölfinger“ Federov.", status:"final"},
+
+{id:5045,title:"Material für den Aufbau",npc:921,
+ giver:npcLabel(921),turnIn:npcLabel(921),
+ prereq:[5044],rep:200,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery"],
+ dialog:{an:"Na, <>? Hast du dir die alte Mühle da drüben schon angesehen? Ja, ich weiß, sie sieht aus, als hätte sie drei Kriege und zwei Besitzer mit Führerschein überlebt. Aber der Rahmen ist noch brauchbar. Bring mir Metallplatten, Rohre, Schrott und Stoff. Dann sehen wir mal, ob wir aus dem Haufen wieder ein Auto machen – oder wenigstens etwas, das bergab sehr überzeugend rollt.",
+  offen:"Für den Aufbau fehlt noch Material, <>. Blech, Rohre, Schrott und Stoff. Ohne das kann selbst ich nur davorstehen und fachmännisch nicken.",
+  ab:"Jawoll, das reicht. Damit kann ich arbeiten. Ich hab den brauchbaren Rahmen vorbereitet und daraus einen Chassis-Bausatz gemacht. Hübsch ist anders, aber hübsch war auch nie das Ziel. Ein Chassis allein fährt allerdings keinen Meter. Jetzt kommen die Teile, bei denen es richtig dreckig wird."},
+ objectiveText:"Geber/Abgabe: Vitali (921).", objectiveExtra:[],
+ delivery:[{q:6,n:"MetalPlate"},{q:4,n:"Pipe"},{q:4,n:"scrapmetal"},{q:6,n:"Rag"}],
+ reward:{items:[{q:1,n:"chassiskit"},{q:2,n:"engineparts"}],rep:300},
+ technical:[], note:null, status:"final"},
+
+{id:5046,title:"Teile für das Auto",npc:921,
+ giver:npcLabel(921),turnIn:npcLabel(921),
+ prereq:[5045],rep:1000,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery","Crafting"],
+ dialog:{an:"Jetzt sind wir an dem Punkt, an dem Leute anfangen, so zu tun, als würden sie etwas von Autos verstehen, <>. Das Chassis steht. Was fehlt, sind Motor, Auspuff, Benzintank und Reifen. Und bevor du fragst: Nein, die liegen nicht zufällig fertig unter irgendeiner Plane. Die baust du selbst an der Werkbank.\n\nMotor bauen – Werkzeug: Schraubenschlüssel – Benötigt: 2x Motorteile, 2x Schrott, 2x Metallbleche – Ergebnis: 1x Motor\n\nAuspuff bauen – Werkzeug: Rohrzange – Benötigt: 2x Metallrohr, 1x Metallblech, 3x Stofffetzen – Ergebnis: 1x Auspuff\n\nBenzintank bauen – Werkzeug: Schraubenschlüssel – Benötigt: 3x Metallbleche, 2x Schrott, 1x Metallrohr – Ergebnis: 1x Benzintank\n\nReifen bauen – Werkzeug: Radmutternschlüssel – Benötigt: 1x Schrott, 2x Draht, 2x Stofffetzen – Ergebnis: 1x Reifen\n\nDas Prinzip ist einfach: Material in die Werkbank, passendes Werkzeug in die Hand und hoffen, dass du danach noch genauso viele Finger hast wie vorher. Bevor du loslegst, bring mir noch ein brauchbares Motorteil und etwas Schrott. Ich seh mir an, was davon zu retten ist.",
+  offen:"Mir fehlen noch ein brauchbares Motorteil und etwas Schrott, <>. Bring beides her. Dann entscheide ich, ob es Ersatzteil oder Briefbeschwerer wird.",
+  ab:"Ja, das taugt. Und stell dir vor: Zwischen dem ganzen Müll hier lagen tatsächlich noch ein brauchbarer Kühler, eine Batterie und eine Zündkerze. Fast so, als hätte ich ein System. Nimm das Zeug mit. Zusammen mit dem Chassis und den Teilen von der Werkbank fehlt der alten Mühle jetzt fast nichts mehr. Fast."},
+ objectiveText:"Selbstbau an der Werkbank + Abgabe (siehe Technische Hinweise für Bau-Rezepte).", objectiveExtra:[],
+ delivery:[{q:1,n:"engineparts"},{q:1,n:"scrapmetal"}],
+ reward:{items:[{q:1,n:"CarBattery"},{q:1,n:"CarRadiator"},{q:1,n:"SparkPlug"}],rep:200},
+ technical:[
+   "Motor bauen – Werkzeug: Schraubenschlüssel – Benötigt: 2x Motorteile, 2x Schrott, 2x Metallbleche – Ergebnis: 1x Motor",
+   "Auspuff bauen – Werkzeug: Rohrzange – Benötigt: 2x Metallrohr, 1x Metallblech, 3x Stofffetzen – Ergebnis: 1x Auspuff",
+   "Benzintank bauen – Werkzeug: Schraubenschlüssel – Benötigt: 3x Metallbleche, 2x Schrott, 1x Metallrohr – Ergebnis: 1x Benzintank",
+   "Reifen bauen – Werkzeug: Radmutternschlüssel – Benötigt: 1x Schrott, 2x Draht, 2x Stofffetzen – Ergebnis: 1x Reifen"
+ ], note:null, status:"final"},
+
+{id:5047,title:"Das Automobil",npc:921,
+ giver:npcLabel(921),turnIn:npcLabel(921),
+ prereq:[5046],rep:1000,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery","Kapitel-Abschluss"],
+ dialog:{an:"Jetzt fehlt tatsächlich nur noch der letzte Schritt, <>. Das Chassis hast du, die Teile kannst du bauen und den Rest hab ich dir zusammengesucht. Was dir noch fehlt, ist ein Bauplan. Ohne Plan kannst du natürlich einfach alles irgendwie zusammenschrauben – machen erstaunlich viele. Fahren tut's danach nur meistens nicht.\n\nBring mir vier saubere Bögen Papier. Dann zeichne ich dir auf, was wohin gehört. Auf meinen alten Zetteln hier ist inzwischen mehr Öl als Schrift, und ehrlich gesagt weiß ich bei einem davon selbst nicht mehr, ob das ein Motor oder eine Einkaufsliste sein sollte.",
+  offen:"Vier Bögen Papier, <>. Sauber, wenn's geht. Auf Ölflecken zeichnen kann ich selbst.",
+  ab:"Perfekt. Gib her. So... Motor hier, Tank da, Auspuff nach hinten. Und die Reifen machst du am besten außen dran – kleiner Geheimtipp vom Fachmann. Hier ist dein Bauplan, <>. Du hast alles, was du brauchst. Mach was Vernünftiges aus der alten Mühle. Und wenn du sie am ersten Baum krummfährst, erzähl Grigori einfach, es war schon so."},
+ objectiveText:null, objectiveExtra:[],
+ delivery:[{q:4,n:"Paper"}],
+ reward:{items:[{q:1,n:"blueprint_adaw"}],rep:200},
+ technical:[], note:"Kapitel-Abschluss der Mechaniker-Reihe (907+921). Gesamt-Reputation Mechaniker-Reihe: 1300 Rep.", status:"final"},
+
+/* ---------- MILIZIONÄR TIMUR BEK (909) → NIKOLAJ BATYA (922) → ALEXEI (923) ---------- */
+{id:5101,title:"Ruhe vor dem Sturm",npc:909,
+ giver:npcLabel(909),turnIn:npcLabel(909),
+ prereq:[5002],rep:550,repeat:"einmalig",cooldown:"–",
+ tags:["Travel","Sequential"],
+ dialog:{an:"Miroslav meint, du willst dich hier nützlich machen, <>. Gut. Dann fangen wir mit etwas Einfachem an. Rund um Alexandria halten wir ein paar Außenposten besetzt. Normalerweise melden die sich regelmäßig – heute ist es verdächtig still geworden.\n\nGeh die Posten der Reihe nach ab und sieh nach dem Rechten. Wenn alles ruhig ist, umso besser. Wenn nicht, merk dir genau, was du siehst. Und spiel nicht den Helden – heute will ich Informationen, keine Leichen.",
+  offen:"Du hast noch nicht alle Posten kontrolliert, <>. Geh die Runde zu Ende. Ich will wissen, warum es draußen plötzlich so verdammt ruhig geworden ist.",
+  ab:"Der letzte Posten war leer? Verdammt... Meine Leute verschwinden nicht einfach mitten aus ihrer Schicht.\n\nWenn dort weder Verwundete noch Ausrüstung zurückgeblieben sind, ist irgendetwas passiert. Und ich bezweifle, dass sie freiwillig gegangen sind.\n\nGut, dass du nachgesehen hast, <>. Halt dich in meiner Nähe. Ich lasse prüfen, was auf dieser Strecke passiert ist – und wenn mein Verdacht stimmt, war das heute nur die Ruhe vor dem Sturm."},
+ objectiveText:"4x sequenzielle Travel-Objectives.",
+ objectiveExtra:["1. Außenposten Polesovo [6039.50, 219.61, 13368.60]","2. Pavlovo [1863.19, 177.82, 4419.15]","3. Solnechny [13351.49, 7.15, 6752.20]","4. Rückkehr zu Milizionär Timur Bek"],
+ delivery:null,
+ reward:{items:[{q:1,n:"My_DF_Weapons_AmmoBox_9x19_PSO_100Rnd"},{q:1,n:"My_DF_Weapons_AmmoBox_45ACP_AP_100Rnd"},{q:2,n:"BandageDressing"},{q:1,n:"Compass"}],rep:250},
+ technical:["Tod bricht nicht ab","SequentialObjectives"], note:null, status:"final"},
+
+{id:5102,title:"Die Banditenspur",npc:909,
+ giver:npcLabel(909),turnIn:npcLabel(909),
+ prereq:[5101],rep:1000,repeat:"einmalig",cooldown:"–",
+ tags:["Travel","AICamp","Sequential","Gruppenquest"],
+ dialog:{an:"Wir haben uns den Bericht aus Solnechny genauer angesehen, <>. Einer meiner Männer hat südlich der Route Spuren gefunden. Mehrere Personen, schweres Gepäck – und sie führen weg vom Posten.\n\nIch glaube nicht mehr daran, dass unsere Leute einfach verschwunden sind. Da draußen hat sich jemand eingerichtet, und ich will wissen, wer.\n\nFolge der Spur. Wenn du auf ein Lager stößt und es tatsächlich Banditen sind, räum es aus dem Weg. Aber unterschätz sie nicht. Das hier ist keine Kontrollrunde mehr.",
+  offen:"Die Spur ist noch heiß, <>. Finde heraus, wohin sie führt. Und wenn du auf die Banditen stößt, sorg dafür, dass keiner von ihnen unseren nächsten Posten ins Visier nimmt.",
+  ab:"Sechs Mann? Dann war das kein zufälliger Überfall.\n\nDie haben dort auf etwas gewartet – oder jemanden. Und wenn sie einen unserer Posten ausgeschaltet haben, kennen sie unsere Wege wahrscheinlich besser, als mir lieb ist.\n\nDu hast gute Arbeit geleistet, <>. Aber ich fürchte, wir haben gerade erst angefangen, an diesem Problem zu kratzen."},
+ objectiveText:"3x Travel (Spuren), anschließend 1x AICamp.",
+ objectiveExtra:["AICamp: 6 Banditen","Fraktion: Mercenaries","Loadout: BanditLoadout_Solnechny","Position: [10435.55, 283.08, 5967.66]"],
+ delivery:null,
+ reward:{items:[{q:1,n:"My_DF_Weapons_Rifles_AKM",note:"10%/90% Zustand"},{q:2,n:"My_DF_Weapons_Rifles_AKM_30RndMag"}],rep:200},
+ technical:["Tod bricht ab","SequentialObjectives"], note:null, status:"final"},
+
+{id:5103,title:"Sicherung der Straße",npc:909,
+ giver:npcLabel(909),turnIn:npcLabel(909),
+ prereq:[5102],rep:1500,repeat:"einmalig",cooldown:"–",
+ tags:["Travel","AICamp","Sequential","Gruppenquest"],
+ dialog:{an:"Das Lager war nicht das Ende, <>. Einer unserer Versorgungstrupps hat auf dem Rückweg etwas Merkwürdiges gemeldet. Frische Spuren an der Straße, Schleifspuren im Dreck und Fahrzeugteile, die dort gestern noch nicht lagen.\n\nIch will wissen, was da draußen passiert. Geh die Strecke ab und sieh dir die Spuren an. Wenn mein Verdacht stimmt, haben die Banditen angefangen, unsere Straßen zu kontrollieren.\n\nUnd falls du auf eine Blockade stößt – räum sie aus dem Weg. Alexandria kann es sich nicht leisten, dass irgendein Haufen Wegelagerer entscheidet, wer hier noch durchkommt.",
+  offen:"Folge den Spuren, <>. Wenn dort draußen wirklich eine Blockade steht, will ich, dass sie verschwindet.",
+  ab:"Eine richtige Straßenblockade... dann wissen wir jetzt wenigstens, was sie vorhaben.\n\nDie warten nicht mehr darauf, dass jemand zufällig in ihr Lager läuft. Sie gehen inzwischen gezielt auf unsere Versorgungswege.\n\nGut, dass du sie ausgeschaltet hast, <>. Aber ab jetzt behandeln wir das nicht mehr wie ein paar herumstreunende Banditen. Die organisieren sich."},
+ objectiveText:"3x Travel, anschließend 1x AICamp.",
+ objectiveExtra:["AICamp: 4 Banditen","Fraktion: Mercenaries","Loadout: BanditLoadout_Solnechny","Position: [3844.63, 234.91, 4789.68]"],
+ delivery:null,
+ reward:{items:[{q:1,n:"My_DF_Weapons_SMG_P90"},{q:1,n:"My_DF_Weapons_SMG_P90_50RndMag"},{q:1,n:"My_DF_Weapons_AmmoBox_57x28_SS190_100Rnd"},{q:1,n:"My_DF_Weapons_Attachments_barrel_P90Long"},{q:1,n:"My_DF_Weapons_Attachments_stock_P90_StockPad"}],rep:250},
+ technical:["Tod bricht ab","SequentialObjectives"], note:null, status:"final"},
+
+{id:5104,title:"Handel mit dem Sanctuary",npc:909,
+ giver:npcLabel(909),turnIn:npcLabel(922),
+ prereq:[5103],rep:1500,repeat:"einmalig",cooldown:"–",
+ tags:["Travel","Sequential","Gruppenquest"],
+ dialog:{an:"Die Blockade ist weg, <>. Damit können wir endlich wieder eine Verbindung nutzen, die uns in letzter Zeit gefehlt hat.\n\nIm Sanctuary sitzt ein Mann namens Nikolaj Batya. Wir kennen ihn schon eine Weile, und er hat Material für Alexandria zurückgelegt. Nichts davon bringt uns Ruhm, aber genau solche Lieferungen halten diesen Ort am Leben.\n\nGeh zum Sanctuary und such Nikolaj auf. Er weiß, dass jemand von uns kommt. Übernimm das Material und bring es zurück nach Alexandria. Und auch wenn die Straße wieder frei ist – bleib aufmerksam. Die Banditen sind nicht plötzlich verschwunden.",
+  offen:"Nikolaj Batya wartet im Sanctuary auf dich, <>. Hol das Material ab und bring es sicher zurück nach Alexandria.",
+  ab:"Nikolaj wiegt das Material kurz in den Händen, bevor er es dir übergibt. „Das ist alles, was für Alexandria zurückgelegt wurde. Pass unterwegs auf.“"},
+ objectiveText:"3x Travel zum Sanctuary (Kontrollpunkt 1, Kontrollpunkt 2, Nikolaj).",
+ objectiveExtra:[],
+ delivery:null,
+ reward:{items:[],rep:50,note:"Kein Item-Reward"},
+ technical:["FollowUpQuest: 5098","Tod bricht nicht ab","SequentialObjectives"], note:"Turn-in bei Nikolaj Batya (922) im Sanctuary.", status:"final"},
+
+{id:5098,title:"Rückweg nach Alexandria",npc:909,
+ giver:npcLabel(922)+" (automatisch bei Annahme)",turnIn:npcLabel(909),
+ prereq:[5104],rep:null,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery","Gruppenquest"],
+ dialog:{an:"Nikolaj drückt dir das Material in die Hand. „So. Bring das jetzt sicher zurück. Und lass dir unterwegs von niemandem etwas davon abnehmen.“",
+  offen:"Die Lieferung ist noch nicht in Alexandria angekommen, <>. Der Milizionär wartet darauf.",
+  ab:"Gut. Alles angekommen.\n\nSolche Lieferungen sehen vielleicht nicht besonders beeindruckend aus, <>. Aber ohne Nachschub helfen uns auch Mauern und Waffen irgendwann nicht mehr weiter.\n\nDu hast inzwischen bewiesen, dass ich dich nicht nur zum Schießen gebrauchen kann. Wenn etwas wichtig ist und heil zurückkommen soll, kann ich dich losschicken. Das merke ich mir."},
+ objectiveText:"Delivery-Objective. Abgabe spawnt automatisch bei Nikolaj Batya.", objectiveExtra:[],
+ delivery:[{q:1,n:"My_DF_Weapons_LMG_PKM_125RndMag",note:"automatisch erhalten"},{q:1,n:"My_DF_Weapons_LMG_M250_125RndMag",note:"automatisch erhalten"},{q:2,n:"My_DF_Weapons_Ammo_RPG7_AP",note:"automatisch erhalten"},{q:1,n:"My_DF_Weapons_Launcher_RPG7",note:"automatisch erhalten"}],
+ reward:{items:[{q:1,n:"mmg_gun_rack_kit_green"},{q:1,n:"mmg_locker02_blue_kit"},{q:1,n:"My_DF_Weapons_Pistols_Shockpistol_Black"},{q:1,n:"My_DF_Weapons_Pistols_Shockpistol_2RndMag"}],rep:250},
+ technical:["Abgabe spawnt automatisch bei Nikolaj Batya (922) – kein eigenständiges Sammeln nötig","ReputationRequirement nicht separat dokumentiert"], note:null, status:"final"},
+
+{id:5105,title:"Eskorte des Ingenieurs",npc:909,
+ giver:npcLabel(909),turnIn:npcLabel(909),
+ prereq:[5098,5104],rep:1500,repeat:"einmalig",cooldown:"–",
+ tags:["Travel","AIVIP","Escort","Sequential","Gruppenquest"],
+ dialog:{an:"Ich habe einen Auftrag für dich, bei dem mir eine Kiste Material ausnahmsweise nicht reicht, <>.\n\nDu kennst inzwischen den Weg zum Sanctuary. Dort wartet ein Mann namens Pavel Novak. Ingenieur. Einer von der Sorte, die aus drei kaputten Maschinen wenigstens eine wieder zum Laufen bekommen.\n\nWir könnten jemanden wie ihn hier verdammt gut gebrauchen, und Pavel ist bereit, nach Alexandria zu kommen.\n\nDas Problem ist der Weg. Nach allem, was in letzter Zeit passiert ist, lasse ich ihn nicht allein durch die Gegend laufen.\n\nGeh zurück zum Sanctuary, finde Pavel und bring ihn sicher zu uns. Und diesmal gilt: Du kommst nicht allein zurück.",
+  offen:"Pavel muss lebend nach Alexandria kommen, <>. Bleib bei ihm und lass ihn unterwegs nicht aus den Augen.",
+  ab:"Da seid ihr ja. Gut.\n\nWillkommen in Alexandria, Pavel. Such dir erstmal einen Platz und komm zur Ruhe – Arbeit finden wir für dich früh genug.\n\nUnd du, <>... gute Arbeit. Material kann man ersetzen. Leute mit solchen Fähigkeiten nicht.\n\nDass ich dir jemanden anvertraue und ihr beide hier ankommt, sagt mir mehr als jeder Bericht."},
+ objectiveText:"1x Travel zum Sanctuary, anschließend 1x AIVIP-Eskorte nach Alexandria.",
+ objectiveExtra:["Start: Sanctuary [8157.56, 473.59, 9058.31]","AIVIP: Pavel Novak (Eskorte-Ziel, kein eigener Quest-NPC), eigenes Loadout mit 93R-Pistole + Attachments","Ziel: Alexandria [3723.91, 401.73, 6006.77]","Zielradius: 10 m"],
+ delivery:null,
+ reward:{items:[{q:1,n:"93R-Pistole"},{q:1,n:"My_DF_Weapons_Attachments_pisg_93RErgo"},{q:1,n:"My_DF_Weapons_Attachments_pisg_93RAdv"},{q:1,n:"My_DF_Weapons_Attachments_barrel_93RAuto"},{q:1,n:"My_DF_Weapons_Attachments_muzzle_Common1_2"},{q:1,n:"My_DF_Weapons_Attachments_other_PTMount"},{q:1,n:"FNP45_MRDSOptic"},{q:1,n:"12Rnd-Magazin"},{q:1,n:"24Rnd-Magazin"},{q:1,n:"AmmoBox 9x19 AP63"},{q:1,n:"Battery9V"}],rep:500},
+ technical:["Tod bricht ab","SequentialObjectives"], note:null, status:"final"},
+
+{id:5106,title:"Das Ende der Spur",npc:909,
+ giver:npcLabel(909),turnIn:npcLabel(923),
+ prereq:[5105],rep:null,repeat:"einmalig",cooldown:"–",
+ tags:["Travel","AICamp","Sequential","Gruppenquest"],
+ dialog:{an:"Seit Pavel hier ist, haben wir uns alles noch einmal angesehen, <>. Die verschwundenen Leute, das Lager, die Straßenblockade, die Funkmeldungen und die Versorgungswege. Stück für Stück ergibt das Ganze endlich ein Bild.\n\nAlles führt zu einer Bohrinsel vor der Küste. Offenbar sitzt dort der Kern der Gruppe, die uns seit Wochen Probleme macht.\n\nAm Hafen steht ein Boot für dich bereit. Fahr rüber und räum die Stellung aus dem Weg. Auf der Insel hält sich ein Mann namens Alexei auf. Wenn du den Stützpunkt gesichert hast, such ihn. Er hat Unterlagen, die wir unbedingt brauchen.\n\nBring mir den Koffer zurück nach Alexandria.\n\nWir haben lange genug auf das reagiert, was diese Leute tun, <>. Diesmal gehen wir zu ihnen.",
+  offen:"Die Sache auf der Bohrinsel ist noch nicht erledigt, <>. Räum den Stützpunkt, finde Alexei und bring den Koffer mit den Unterlagen zurück nach Alexandria. Erst dann wissen wir, womit wir es wirklich zu tun hatten.",
+  ab:"Alexei zieht einen Koffer unter einem Tisch hervor. „Namen, Routen, Funkaufzeichnungen - alles, was wir sicherstellen konnten. Bring das zu deinen Leuten in Alexandria.“"},
+ objectiveText:"Travel-Kette zum Hafen und zur Bohrinsel, danach AICamp und Rückgabe bei Alexei.",
+ objectiveExtra:["Travel zum Hafen [378.84, 0.41, 1386.89] – Boot Boat_01_Orange steht dort dauerhaft bereit (mit Sparkplug + vollem Tank)","Travel zur Bohrinsel","AICamp: 9 Banditen gesamt (4 unten ~13,9 m Höhe + 5 oben ~29–33 m Höhe), Fraktion Mercenaries, Loadout BanditLoadout_Bohrinsel (AK12+30Rnd über Schulter, 93R+12Rnd im Hosen-Holster, Tomahawk, FOG-Ausrüstung)","Travel zu Alexei"],
+ delivery:null,
+ reward:{items:[],rep:300,note:"Kein Item-Reward"},
+ technical:["FollowUpQuest: 5099","Tod bricht ab","SequentialObjectives","ReputationRequirement nicht separat dokumentiert"], note:"Turn-in bei Alexei (923) auf der Bohrinsel.", status:"final"},
+
+{id:5099,title:"Der Beweiskoffer",npc:909,
+ giver:npcLabel(923)+" (automatisch bei Annahme)",turnIn:npcLabel(909),
+ prereq:[5106],rep:null,repeat:"einmalig",cooldown:"–",
+ tags:["Delivery","Gruppenquest"],
+ dialog:{an:"Alexei drückt dir den Koffer in die Hand. „Bring das direkt zu deinen Leuten. Und lass dich unterwegs von niemandem aufhalten.“",
+  offen:"Der Koffer ist noch nicht in Alexandria angekommen, <>. Der Milizionär wartet darauf.",
+  ab:"Da ist er also... der Koffer.\n\nNamen, Routen, Lieferungen, Funkaufzeichnungen... verdammt. Das erklärt einiges.\n\nDann war das alles tatsächlich miteinander verbunden. Der verschwundene Außenposten, das Lager, die Blockade – das waren keine einzelnen Zufälle. Sie hatten Struktur, Nachschub und einen Plan.\n\nAber die Bohrinsel ist gefallen und ihre Unterlagen liegen jetzt bei uns.\n\nDu hast uns nicht nur geholfen, ein paar Banditen loszuwerden, <>. Du hast dafür gesorgt, dass Alexandria endlich wieder einen Schritt voraus sein kann.\n\nFür den Moment ist diese Sache beendet. Gute Arbeit."},
+ objectiveText:"Delivery-Objective. Abgabe spawnt automatisch bei Alexei.", objectiveExtra:[],
+ delivery:[{q:1,n:"ExpansionBriefcase",note:"spawnt automatisch bei Alexei"}],
+ reward:{items:[{q:1,n:"93R-Pistole (zweites komplettes Set)"},{q:1,n:"Ergo-Griff"},{q:1,n:"Adv-Griff"},{q:1,n:"Auto-Barrel"},{q:1,n:"Muzzle"},{q:1,n:"PT-Mount"},{q:1,n:"FNP45-Optik"},{q:1,n:"12Rnd-Magazin"},{q:1,n:"24Rnd-Magazin"},{q:1,n:"AmmoBox AP63"},{q:1,n:"Battery9V"}],rep:300},
+ technical:["Abgabe spawnt automatisch bei Alexei (923) – kein eigenständiges Sammeln nötig","ReputationRequirement nicht separat dokumentiert"], note:"Letzte Quest der Miliz-Reihe. Gesamt-Reputation Milizionär Timur Bek (inkl. Nikolaj-/Alexei-Zwischenstationen): 2100 Rep.", status:"final"},
+
+/* ---------- SCHWARZES BRETT (912) – DAILY-QUESTS 5301–5310 ---------- */
+{id:5301,title:"Ausdünnen",npc:912,
+ giver:npcLabel(912),turnIn:"Kein Turn-in-NPC nötig (Autocomplete)",
+ prereq:[5002],rep:0,repeat:"taeglich",cooldown:"Täglich",
+ tags:["Target","Daily"],
+ dialog:{an:"Die Zahl der Infizierten rund um die Siedlungen nimmt wieder zu. Jeder, der draußen unterwegs ist, kann helfen, ihre Reihen etwas auszudünnen. Dreißig sollten fürs Erste reichen.",
+  offen:"Noch sind zu viele Infizierte unterwegs. Bleib wachsam und erledige den Rest, wenn sich die Gelegenheit bietet.",
+  ab:"Dreißig weniger, die den Lebenden Probleme machen. Auftrag erledigt."},
+ objectiveText:"Töte 30 Infizierte.", objectiveExtra:["Ziel: 30 Infizierte"],
+ delivery:null,
+ reward:{items:[{q:2,n:"BandageDressing"},{q:1,n:"TacticalBaconCan"}],rep:50},
+ technical:["Repeatable:1","IsDailyQuest:1","Autocomplete:1","QuestTurnInIDs: []","Tod bricht nicht ab"], note:null, status:"final"},
+
+{id:5302,title:"Raubtierkontrolle",npc:912,
+ giver:npcLabel(912),turnIn:"Kein Turn-in-NPC nötig (Autocomplete)",
+ prereq:[5002],rep:0,repeat:"taeglich",cooldown:"Täglich",
+ tags:["Target","Daily"],
+ dialog:{an:"Mehrere Reisende melden wieder Wolfsrudel entlang der Wege. Niemand erwartet, dass du ihnen hinterherjagst, aber wenn du draußen auf welche triffst, sorg dafür, dass ein paar weniger zurückkommen.",
+  offen:"Die Wolfsrudel sind noch immer ein Problem. Zwölf Abschüsse reichen für diesen Auftrag.",
+  ab:"Zwölf weniger, die Reisenden und Jägern Probleme machen. Auftrag erledigt."},
+ objectiveText:"Töte 12 Wölfe.", objectiveExtra:["Ziel: 12 Wölfe"],
+ delivery:null,
+ reward:{items:[{q:1,n:"HuntingKnife"},{q:1,n:"Canteen"}],rep:60},
+ technical:["Repeatable:1","IsDailyQuest:1","Autocomplete:1","QuestTurnInIDs: []","Tod bricht nicht ab"], note:null, status:"final"},
+
+{id:5303,title:"Jagdquote",npc:912,
+ giver:npcLabel(912),turnIn:"Kein Turn-in-NPC nötig (Autocomplete)",
+ prereq:[5002],rep:0,repeat:"taeglich",cooldown:"Täglich",
+ tags:["Target","Daily"],
+ dialog:{an:"Fleisch wächst nicht in Konservendosen, auch wenn manche hier das inzwischen glauben. Wenn du draußen unterwegs bist, halt die Augen offen. Drei Ziegen, zwei Schweine und drei Kühe würden unsere Vorräte ordentlich auffüllen.",
+  offen:"Die Jagdquote ist noch nicht erfüllt. Drei Ziegen, zwei Schweine und drei Kühe – dann ist der Auftrag erledigt.",
+  ab:"Das sollte unsere Vorräte eine Weile entlasten. Gute Jagd. Auftrag erledigt."},
+ objectiveText:"Erlege 3 Ziegen, 2 Schweine und 3 Kühe (3x Target parallel).", objectiveExtra:["Ziel: 3 Ziegen","Ziel: 2 Schweine","Ziel: 3 Kühe"],
+ delivery:null,
+ reward:{items:[{q:1,n:"LeatherSewingKit"},{q:1,n:"SharpeningStone"}],rep:100},
+ technical:["Repeatable:1","IsDailyQuest:1","Autocomplete:1","QuestTurnInIDs: []","Tod bricht nicht ab"], note:null, status:"final"},
+
+{id:5304,title:"Helfende Hand",npc:912,
+ giver:npcLabel(912),turnIn:"Kein Turn-in-NPC nötig (Autocomplete)",
+ prereq:[5002],rep:0,repeat:"taeglich",cooldown:"Täglich",
+ tags:["Action","Daily"],
+ dialog:{an:"Nicht jede Hilfe braucht eine Waffe. Wenn du draußen jemanden verletzt findest, kümmer dich um ihn. Ein sauber angelegter Verband kann mehr wert sein als jede volle Magazinladung.",
+  offen:"Hilf einem anderen Überlebenden bei einer Verletzung. Mehr braucht es für diesen Auftrag nicht.",
+  ab:"Jemand ist heute wegen dir ein Stück besser davongekommen. Auftrag erledigt."},
+ objectiveText:"Verbinde einen anderen Überlebenden.", objectiveExtra:["Aktion: ActionBandageTarget","Muss an einem anderen Spieler ausgeführt werden – Selbstverband zählt nicht"],
+ delivery:null,
+ reward:{items:[{q:2,n:"BandageDressing"},{q:1,n:"SalineBagIV"}],rep:40},
+ technical:["Repeatable:1","IsDailyQuest:1","Autocomplete:1","QuestTurnInIDs: []","Tod bricht nicht ab"], note:null, status:"final"},
+
+{id:5305,title:"Kontrollrunde",npc:912,
+ giver:npcLabel(912),turnIn:"Kein Turn-in-NPC nötig (Autocomplete)",
+ prereq:[5002],rep:0,repeat:"taeglich",cooldown:"Täglich",
+ tags:["Travel","Sequential","Daily"],
+ dialog:{an:"Nicht jeder Auftrag endet mit einer Schießerei. Einige Wege und Punkte rund um Alexandria müssen regelmäßig kontrolliert werden. Geh die Runde ab und sieh nach, ob dort draußen alles ruhig ist.",
+  offen:"Die Kontrollrunde ist noch nicht abgeschlossen. Geh alle vorgesehenen Punkte der Reihe nach ab.",
+  ab:"Runde abgeschlossen. Gut zu wissen, dass zumindest heute nichts Ungewöhnliches gemeldet wurde."},
+ objectiveText:"Kontrolliere die drei angegebenen Punkte (3x Travel, sequenziell).",
+ objectiveExtra:["1. Biergarten Krona [1517.419800, 297.158203, 9120.097656]","2. Burg Klynch – Grab des Schwarzen Ritters [9304.047852, 106.051949, 13488.083008]","3. Außenposten Solnechny [13356.995117, 5.526184, 6756.270508]"],
+ delivery:null,
+ reward:{items:[{q:1,n:"Compass"},{q:1,n:"WaterBottle"},{q:2,n:"BandageDressing"}],rep:50},
+ technical:["Repeatable:1","IsDailyQuest:1","Autocomplete:1","QuestTurnInIDs: []","Tod bricht nicht ab"], note:null, status:"final"},
+
+{id:5306,title:"Banditenblockade",npc:912,
+ giver:npcLabel(912),turnIn:"Kein Turn-in-NPC nötig (Autocomplete)",
+ prereq:[5002],rep:0,repeat:"taeglich",cooldown:"Täglich",
+ tags:["AICamp","Daily"],
+ dialog:{an:"Auf einer der Straßen haben Banditen wieder eine Blockade errichtet. Bewaffnete Männer halten dort Reisende an und nehmen sich, was ihnen gefällt. Räum die Stellung aus dem Weg.",
+  offen:"Die Blockade steht noch. Solange die Banditen dort sitzen, ist die Straße nicht sicher.",
+  ab:"Die Blockade ist weg. Damit ist die Strecke zumindest für heute wieder frei."},
+ objectiveText:"Beseitige die Banditen an der Straßenblockade.",
+ objectiveExtra:["AICamp: 4 Banditen","Fraktion: Mercenaries","Loadout: BanditLoadout_Solnechny","AccuracyMin: 0.55, AccuracyMax: 0.85, Behaviour: ROAMING_LOCAL","Positionen: [10256.017578, 27.063486, 3199.105469], [10234.580078, 25.135157, 3171.218262]","MinDistance: 75, MaxDistance: 350, DespawnRadius: 600"],
+ delivery:null,
+ reward:{items:[{q:1,n:"My_DF_Weapons_Pistols_Deagle"},{q:1,n:"My_DF_Weapons_Attachments_pisg_DeagleErgo"},{q:1,n:"My_DF_Weapons_Pistols_Deagle_13RndMag"},{q:1,n:"My_DF_Weapons_Attachments_barrel_DeagleLong"},{q:1,n:"My_DF_Weapons_AmmoBox_50AE_AP_100Rnd"}],rep:75},
+ technical:["Repeatable:1","IsDailyQuest:1","Autocomplete:1","QuestTurnInIDs: []","Tod bricht Quest ab – einzige Ausnahme innerhalb 5301–5310"], note:"Einzige Board-Daily, bei der der Tod des Spielers die Quest abbricht.", status:"final"},
+
+{id:5307,title:"Banditenpatrouille",npc:912,
+ giver:npcLabel(912),turnIn:"Kein Turn-in-NPC nötig (Autocomplete)",
+ prereq:[5002],rep:0,repeat:"taeglich",cooldown:"Täglich",
+ tags:["AICamp","Daily"],
+ dialog:{an:"Eine weitere bewaffnete Gruppe wurde draußen gesichtet. Sie kontrolliert die Gegend und wartet offenbar auf Reisende, die sich nicht wehren können. Kümmere dich darum.",
+  offen:"Die Banditen sind noch dort draußen. Finde sie und schalte die Gruppe aus.",
+  ab:"Die Gruppe ist erledigt. Wieder ein Stück Straße, auf dem man sich etwas freier bewegen kann."},
+ objectiveText:"Finde die Banditen und schalte alle vier aus.",
+ objectiveExtra:["Trotz des Namens technisch als AICamp umgesetzt","AICamp: 4 Banditen","Fraktion: Mercenaries","Loadout: BanditLoadout_Solnechny","AccuracyMin: 0.55, AccuracyMax: 0.85, Behaviour: ROAMING_LOCAL","Positionen: [2365.100830, 369.472595, 14107.372070], [2374.008301, 366.256775, 14137.271484], [2342.654053, 370.837830, 14152.708984]","MinDistance: 75, MaxDistance: 350, DespawnRadius: 600"],
+ delivery:null,
+ reward:{items:[{q:1,n:"My_DF_Weapons_AmmoBox_45ACP_AP_100Rnd"},{q:1,n:"My_DF_Weapons_AmmoBox_545x39_PRS_100Rnd"},{q:1,n:"My_DF_Weapons_AmmoBox_762x39_PS_100Rnd"},{q:1,n:"My_DF_Weapons_AmmoBox_9x19_PSO_100Rnd"},{q:1,n:"My_DF_Weapons_AmmoBox_300_Bpz_100Rnd"}],rep:75},
+ technical:["Repeatable:1","IsDailyQuest:1","Autocomplete:1","QuestTurnInIDs: []","Tod bricht nicht ab"], note:null, status:"final"},
+
+{id:5308,title:"Vergrabene Vorräte",npc:912,
+ giver:npcLabel(912),turnIn:"Kein Turn-in-NPC nötig (Autocomplete)",
+ prereq:[5002],rep:0,repeat:"taeglich",cooldown:"Täglich",
+ tags:["TreasureHunt","Daily"],
+ dialog:{an:"Jemand hat vor einiger Zeit Vorräte außerhalb der Siedlung versteckt und die Stelle nur grob beschrieben. Offenbar ist niemand zurückgekommen, um sie zu holen. Such das Gebiet ab und finde das Versteck. Wenn du etwas Brauchbares ausgräbst, gehört es dir.",
+  offen:"Die Vorräte liegen noch irgendwo dort draußen. Such das markierte Gebiet gründlich ab.",
+  ab:"Gefunden ist gefunden. Wenn dort draußen noch mehr davon vergraben liegt, hat es jemand anderes offenbar dringender gebraucht als der ursprüngliche Besitzer."},
+ objectiveText:"TreasureHunt – 6 mögliche Fundpositionen, 1 zufällig pro Durchlauf.",
+ objectiveExtra:["ContainerName: ExpansionQuestSeaChest","LootItemsAmount: 10","MaxDistance: 50","DigInStash: 0",
+   "Fundpositionen: [9081.477539, 338.886993, 9853.105469] / [9145.940430, 330.542999, 9803.919922] / [9039.969727, 336.925995, 9793.429688] / [9006.500000, 343.869995, 9852.160156] / [9068.889648, 338.236450, 9803.969727] / [9177.246094, 321.500061, 9765.427734]"],
+ delivery:null,
+ reward:{items:[],rep:50,note:"Kein separater Item-Reward – die Schatzkiste selbst ist die Belohnung (siehe gemeinsamer Lootpool 5308/5309)"},
+ technical:["Repeatable:1","IsDailyQuest:1","Autocomplete:1","QuestTurnInIDs: []","Tod bricht nicht ab"], note:null, status:"final"},
+
+{id:5309,title:"Vergrabene Vorräte II",npc:912,
+ giver:npcLabel(912),turnIn:"Kein Turn-in-NPC nötig (Autocomplete)",
+ prereq:[5002],rep:0,repeat:"taeglich",cooldown:"Täglich",
+ tags:["TreasureHunt","Daily"],
+ dialog:{an:"Noch ein altes Versteck ist aufgetaucht. Offenbar hat jemand dort draußen Vorräte vergraben und ist nie zurückgekommen, um sie wieder zu holen. Die Angaben sind nicht besonders genau. Such das Gebiet gründlich ab. Wenn du den Schatz findest, darfst du behalten, was drin ist.",
+  offen:"Der Schatz liegt noch irgendwo im markierten Gebiet. Such weiter – irgendjemand hat sich damals Mühe gegeben, ihn nicht sofort wiederzufinden.",
+  ab:"Da war also tatsächlich noch etwas vergraben. Nicht schlecht. Was du gefunden hast, gehört dir."},
+ objectiveText:"TreasureHunt – 6 eigene mögliche Fundpositionen, 1 zufällig pro Durchlauf.",
+ objectiveExtra:["ContainerName: ExpansionQuestSeaChest","LootItemsAmount: 10","MaxDistance: 50","DigInStash: 0",
+   "Fundpositionen: [6052.255859, 336.076233, 14264.517578] / [6025.820801, 332.026428, 14233.514648] / [6039.963867, 339.888428, 14315.769531] / [6109.805664, 340.387817, 14304.078125] / [5981.910156, 326.917145, 14201.164063] / [5941.286133, 331.464874, 14262.913086]"],
+ delivery:null,
+ reward:{items:[],rep:50,note:"Kein separater Item-Reward – die Schatzkiste selbst ist die Belohnung (siehe gemeinsamer Lootpool 5308/5309)"},
+ technical:["Repeatable:1","IsDailyQuest:1","Autocomplete:1","QuestTurnInIDs: []","Tod bricht nicht ab"], note:null, status:"final"},
+
+{id:5310,title:"Vermisster Überlebender",npc:912,
+ giver:npcLabel(912),turnIn:"Kein Turn-in-NPC nötig (Autocomplete)",
+ prereq:[5002,5105],rep:0,repeat:"taeglich",cooldown:"Täglich",
+ tags:["Travel","AIVIP","Escort","Daily"],
+ dialog:{an:"Ein Überlebender hat sich seit Stunden nicht mehr gemeldet. Seine letzte bekannte Position ist bekannt, aber allein scheint er es nicht zurückzuschaffen. Finde ihn und bring ihn sicher zum angegebenen Treffpunkt.",
+  offen:"Der Überlebende ist noch draußen. Finde ihn und bring ihn lebend zum Treffpunkt.",
+  ab:"Er ist sicher angekommen. Genau dafür gibt es solche Aufträge."},
+ objectiveText:"Finde den vermissten Überlebenden Mattis und eskortiere ihn sicher nach Alexandria.",
+ objectiveExtra:["1. Travel zur letzten bekannten Position [2643.684814, 113.678650, 2206.513428]","2. VIP „Mattis“ wird aktiviert","3. Loadout: PavelNovakLoadout","4. Eskorte nach Alexandria [3723.865967, 401.570648, 6009.841309]","5. Zielradius: 15 m"],
+ delivery:null,
+ reward:{items:[{q:1,n:"InediaPain_FirstAidCase_Black"},{q:1,n:"SalineBagIV"},{q:2,n:"BandageDressing"}],rep:60},
+ technical:["PreQuestIDs: [5002, 5105] – einzige Board-Quest mit doppelter Voraussetzung","Repeatable:1, IsDailyQuest:1, Autocomplete:1","Tod des Spielers bricht nicht ab","VIP-Tod lässt die Quest nativ über die Engine scheitern"],
+ note:"Fahrt als Passagier darf funktionieren, sofern Expansion dies nativ unterstützt – keine zusätzliche Custom-Fahrzeuglogik.", status:"final"},
+
+/* ---------- ILLEGALE HAUPTREIHE 5200–5207 ---------- */
+{
+ "id": 5200,
+ "title": "Keine Namen",
+ "npc": 916,
+ "giver": "Sergej (916)",
+ "turnIn": "Viktor „Ratte“ Malenko (924)",
+ "prereq": [
+  5008
+ ],
+ "rep": 3000,
+ "repeat": "einmalig",
+ "cooldown": "–",
+ "tags": [
+  "Delivery",
+  "Illegal",
+  "Übergangsquest"
+ ],
+ "dialog": {
+  "an": "Sokolova hat dich also wirklich geschickt, <>.\n\nSergej mustert dich einen Moment und stellt einen verschlossenen Koffer vor sich auf den Tisch.\n\nSie hält dich für zuverlässig. Das ist nett von ihr. Ich halte Menschen grundsätzlich erstmal für ein Problem.\n\nAlso machen wir es einfach.\n\nAußerhalb der üblichen Wege steht eine alte Scheune. Dort wartet ein Mann auf dich. Viktor. Manche nennen ihn Ratte – ich würde das an deiner Stelle nicht ausprobieren.\n\nDu gibst ihm diesen Koffer. Du öffnest ihn nicht. Du verlierst ihn nicht. Und du stellst keine Fragen.\n\nFalls unterwegs jemand wissen will, für wen du arbeitest, lautet die richtige Antwort: für niemanden.\n\nBring ihn hin. Danach sehen wir weiter.",
+  "offen": "Viktor wartet auf den Koffer, <>.\n\nBring ihn zur Scheune und lass ihn geschlossen. Je weniger du über eine Lieferung weißt, desto weniger kannst du darüber erzählen.",
+  "ab": "Du bist also der Neue.\n\nViktor schaut erst dich an, dann den Koffer.\n\nHat Sergej dir gesagt, was da drin ist?\n\nNein? Gut. Dann mag er dich vielleicht.\n\nViktor nimmt den Koffer und kontrolliert sorgfältig den Verschluss.\n\nNoch zu. Sehr schön.\n\nDamit ist dein Teil erledigt.\n\nWobei … wenn du schon mal hier bist: Unter dem Heu liegt etwas, das eigentlich nicht hier sein sollte."
+ },
+ "objectiveText": "Bring Sergejs verschlossenen Koffer zu Viktor an der versteckten Scheune.",
+ "objectiveExtra": [
+  "Viktor: [7251.193359,179.928558,12365.780273]",
+  "Spielertod bricht die Quest nicht ab."
+ ],
+ "startItems": [
+  {
+   "q": 1,
+   "n": "ExpansionBriefcase",
+   "note": "genau einmal bei Annahme"
+  }
+ ],
+ "delivery": [
+  {
+   "q": 1,
+   "n": "ExpansionBriefcase",
+   "note": "wird bei Viktor entfernt"
+  }
+ ],
+ "reward": {
+  "items": [],
+  "rep": 100,
+  "note": "Kein Item-Reward"
+ },
+ "technical": [
+  "Technisch nach funktionierendem Delivery-Muster 5098; nur eine Spawnquelle für den Koffer."
+ ],
+ "note": "Start der illegalen Hauptreihe.",
+ "status": "final",
+ "loot": null
+},
+{
+ "id": 5201,
+ "title": "Unter dem Heu",
+ "npc": 924,
+ "giver": "Viktor „Ratte“ Malenko (924)",
+ "turnIn": "Sergej (916)",
+ "prereq": [
+  5200
+ ],
+ "rep": 0,
+ "repeat": "einmalig",
+ "cooldown": "–",
+ "tags": [
+  "Delivery",
+  "Illegal"
+ ],
+ "dialog": {
+  "an": "Bevor du wieder verschwindest … ich hab da noch was.\n\nViktor greift hinter eine der Kisten und holt zwei Sachen hervor.\n\nHab ich beim Umräumen unter dem ganzen alten Heu gefunden. Definitiv nicht von mir.\n\nGelato. Gras erkenne sogar ich.\n\nUnd das hier gehört wohl zu einem Trockenständer.\n\nNimm beides und bring es Sergej. Vielleicht weiß der, wem das Zeug gehört.",
+  "offen": "Du hast den Gelato-Block und den Trockenständer, <>.\n\nBring beides zu Sergej. Ich möchte das Zeug jedenfalls nicht länger hier haben.",
+  "ab": "Wo hast du das her?\n\nSergej betrachtet erst den Gelato-Block und dann das Kit.\n\nGelato. Getrocknet, verarbeitet und sauber verpackt.\n\nIch kenne jemanden, der bei so etwas geradezu beleidigend viel Wert auf Qualität legt.\n\nMikhail Orlov.\n\nDie Leute nennen ihn Mr. White.\n\nEr hat sich draußen im Wald eingerichtet.\n\nGeh zu ihm. Ich möchte wissen, warum sein Zeug in Viktors Scheune landet."
+ },
+ "objectiveText": "Bring den Gelato-Block und den Trockenständer zu Sergej.",
+ "objectiveExtra": [
+  "Spielertod bricht die Quest nicht ab."
+ ],
+ "startItems": [
+  {
+   "q": 1,
+   "n": "im7s_Brick_Gelato"
+  },
+  {
+   "q": 1,
+   "n": "im7s_DryingRack_Kit",
+   "note": "Trockenständer"
+  }
+ ],
+ "delivery": [
+  {
+   "q": 1,
+   "n": "im7s_Brick_Gelato"
+  },
+  {
+   "q": 1,
+   "n": "im7s_DryingRack_Kit"
+  }
+ ],
+ "reward": {
+  "items": [],
+  "rep": 150,
+  "note": "Kein Item-Reward"
+ },
+ "technical": [
+  "Beide Gegenstände werden genau einmal bei Annahme gegeben und bei Sergej entfernt."
+ ],
+ "note": null,
+ "status": "final",
+ "loot": null
+},
+{
+ "id": 5202,
+ "title": "Mr. White",
+ "npc": 916,
+ "giver": "Sergej (916)",
+ "turnIn": "Mikhail „Mr. White“ Orlov (925)",
+ "prereq": [
+  5201
+ ],
+ "rep": 0,
+ "repeat": "einmalig",
+ "cooldown": "–",
+ "tags": [
+  "Travel",
+  "Illegal",
+  "Übergangsquest"
+ ],
+ "dialog": {
+  "an": "Der Gelato-Block und der Trockenständer gehen mir nicht aus dem Kopf, <>.\n\nIch kenne jemanden, der dir sagen kann, was hinter dem Zeug steckt.\n\nMikhail Orlov.\n\nDie Leute nennen ihn Mr. White.\n\nEr hat sich draußen im Wald eingerichtet.\n\nWenn es um Pflanzen, Chemie und Dinge geht, die man besser nicht offen in Alexandria herumliegen lässt, ist er verdammt gut.\n\nGeh zu ihm und sag ihm, dass ich dich schicke.\n\nUnd noch etwas. Fass dort nichts an. Ich meine das ernst.",
+  "offen": "Mr. White sitzt draußen im Wald, <>.\n\nFind ihn und sag ihm, dass du von mir kommst.\n\nUnd denk an meinen Rat: Hände bei dir behalten.",
+  "ab": "Stopp.\n\nMikhail hebt eine Hand, noch bevor du etwas sagen kannst.\n\nNicht den Tisch. Nicht die Flaschen. Nicht die Pflanzen.\n\nSergej schickt dich?\n\nMikhail Orlov. Mr. White reicht.\n\nDu bist also derjenige mit dem Gelato.\n\nAnbauen kann jeder Idiot mit Erde, Wasser und genug Geduld. Interessant wird es erst danach.\n\nTrocknen. Verarbeiten. Lagern. Qualität erhalten.\n\nWenn Sergej dich wirklich zu mir schickt, finden wir jetzt heraus, ob du nur Sachen von A nach B tragen kannst … oder ob du auch etwas lernst."
+ },
+ "objectiveText": "Finde ‚Mr. White‘ in seinem Haus im Wald.",
+ "objectiveExtra": [
+  "Position: [2197.973633,349.837067,8364.888672]"
+ ],
+ "reward": {
+  "items": [],
+  "rep": 50,
+  "note": "Kein Item-Reward"
+ },
+ "technical": [
+  "Kontakt-/Travelquest; neuer NPC 925."
+ ],
+ "note": null,
+ "status": "final",
+ "startItems": null,
+ "loot": null,
+ "delivery": null
+},
+{
+ "id": 5203,
+ "title": "Grüner Daumen, schmutzige Hände",
+ "npc": 925,
+ "giver": "Mr. White (925)",
+ "turnIn": "Mr. White (925)",
+ "prereq": [
+  5202,
+  5030
+ ],
+ "rep": 0,
+ "repeat": "einmalig",
+ "cooldown": "–",
+ "tags": [
+  "Crafting",
+  "Delivery",
+  "Illegal"
+ ],
+ "dialog": {
+  "an": "Du hast also schon mit Pflanzen gearbeitet.\n\nDie Gärtnerin hat dir gezeigt, wie man das Zeug aus der Erde bekommt. Ich zeige dir, was danach passiert.\n\nBud Branches zuerst auf dem Trockenständer trocknen. Danach nimmst du die getrockneten Branches und verarbeitest sie mit einem Messer zu Buds.\n\nZweites Rezept: Zwei Buds derselben Sorte miteinander kombinieren. Aus zwei Buds wird ein verpackter Zip-Bud.\n\nIch will acht saubere Zip-Buds. Das bedeutet sechzehn Buds derselben Sorte.",
+  "offen": "Acht Zip-Buds, <>.\n\nBud Branches trocknen, die getrockneten Branches mit einem Messer zu Buds verarbeiten und anschließend jeweils zwei Buds derselben Sorte miteinander kombinieren.\n\nZwei Buds ergeben einen Zip-Bud.",
+  "ab": "Gib her.\n\nAcht. Gleiche Sorte. Sauber verarbeitet. Ordentlich verpackt.\n\nMerk dir den Ablauf: Ernten ist nur der Anfang. Trocknen. Verarbeiten. Verpacken.\n\nMr. White stellt ein verpacktes Kit vor dir ab.\n\nTrockenständer. Deiner.\n\nFür kleine Mengen reicht so etwas. Wenn du allerdings wirklich produzieren willst, brauchen wir bessere Ausrüstung.\n\nIch weiß ziemlich genau, wo wir die herbekommen. Sie gehört nur leider jemand anderem."
+ },
+ "objectiveText": "Trockne die Bud Branches, verarbeite sie zu Buds und stelle daraus 8 verpackte Zip-Buds her.",
+ "objectiveExtra": [
+  "2 Buds derselben Sorte = 1 verpackter Zip-Bud.",
+  "8 Zip-Buds = 16 Buds.",
+  "Gelato vorgesehen.",
+  "Exakte Raw-Branch-Classnames, Branch-Menge und Yield aus installierter Mod/Serverconfig verifizieren."
+ ],
+ "delivery": [
+  {
+   "q": 8,
+   "n": "iM7s_Zip_Bagged_Gelato"
+  }
+ ],
+ "reward": {
+  "items": [
+   {
+    "q": 1,
+    "n": "im7s_DryingRack_Kit",
+    "note": "Trockenständer"
+   }
+  ],
+  "rep": 150
+ },
+ "technical": [
+  "Mr. White gibt die nötigen rohen Bud Branches genau einmal; exakte Menge abhängig vom verifizierten Yield.",
+  "Keine fertigen Zip-Buds automatisch erzeugen."
+ ],
+ "note": "Offener Technikpunkt: exakte Branch-Classnames/Yield aus installierter Version bestätigen.",
+ "status": "final",
+ "startItems": null,
+ "loot": null
+},
+{
+ "id": 5204,
+ "title": "Fremdes Eigentum",
+ "npc": 925,
+ "giver": "Mr. White (925)",
+ "turnIn": "Mr. White (925)",
+ "prereq": [
+  5203
+ ],
+ "rep": 0,
+ "repeat": "einmalig",
+ "cooldown": "–",
+ "tags": [
+  "Travel",
+  "AICamp",
+  "TreasureHunt",
+  "Delivery",
+  "Sequential",
+  "Illegal"
+ ],
+ "dialog": {
+  "an": "Du erinnerst dich an das Problem mit der besseren Ausrüstung?\n\nIch habe eine Lösung. Genauer gesagt hat jemand anderes eine Lösung.\n\nEin paar Leute haben sich dort draußen eingerichtet. Aber sie haben brauchbare Ausrüstung: eine Laborstation, einen Produktionstisch, Werkzeug und ein paar Chemikalien.\n\nDu gehst hin. Du überzeugst die derzeitigen Besitzer davon, dass sie ihre Sachen nicht mehr benötigen.\n\nIm Haus stehen zwei Kisten. Nimm alles mit, was ich brauche, und bring es hierher.\n\nDeshalb nennt man es Fremdes Eigentum.",
+  "offen": "Das Drogenhaus steht noch immer dort draußen, <>.\n\nSechs Männer, zwei Kisten und einiges an Ausrüstung, das mir besser gefallen würde als ihnen.\n\nRäum das Gelände auf, hol den Inhalt der beiden Kisten und bring mir alles zurück.",
+  "ab": "Stell alles da hin.\n\nLaborstation. Produktionstisch. Werkzeug. Ammoniak. Pseudoephedrin.\n\nDamit kann man arbeiten. Noch nicht produzieren. Aber arbeiten.\n\nDann hält Mr. White inne und zählt noch einmal.\n\nNatürlich. Einer fehlt.\n\nEs wäre ja auch zu einfach gewesen."
+ },
+ "objectiveText": "Drogenhaus finden → 6 Banditen ausschalten → beide Seekisten sichern → alle 6 Gegenstände zu Mr. White bringen.",
+ "objectiveExtra": [
+  "Drogenhaus: [7502.329102,231.163345,13818.604492]",
+  "6 Banditen; je 1x My_DF_Weapons_SMG_Uzi + 1x My_DF_Weapons_SMG_Uzi_35RndMag; Tod bricht Quest ab.",
+  "Banditenpositionen: [7490.942871,232.720337,13809.461914] / [7485.096680,236.727051,13827.540039] / [7514.451660,230.514984,13828.246094] / [7518.708496,236.597153,13823.010742] / [7521.864258,239.768509,13797.805664] / [7503.275879,230.292099,13798.960938]",
+  "Seekiste 1: [7517.806641,230.619232,13809.934570]",
+  "Seekiste 2: [7507.391602,230.515015,13829.661133]"
+ ],
+ "loot": [
+  {
+   "q": 1,
+   "n": "iM7s_LabStation_Kit",
+   "note": "Kiste 1"
+  },
+  {
+   "q": 1,
+   "n": "Blowtorch",
+   "note": "Kiste 1"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_Ammonia",
+   "note": "Kiste 1"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_ProductionTable_Kit",
+   "note": "Kiste 2"
+  },
+  {
+   "q": 1,
+   "n": "Screwdriver",
+   "note": "Kiste 2"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_pseudoephedrine",
+   "note": "Kiste 2"
+  }
+ ],
+ "delivery": [
+  {
+   "q": 1,
+   "n": "iM7s_LabStation_Kit"
+  },
+  {
+   "q": 1,
+   "n": "Blowtorch"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_Ammonia"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_ProductionTable_Kit"
+  },
+  {
+   "q": 1,
+   "n": "Screwdriver"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_pseudoephedrine"
+  }
+ ],
+ "reward": {
+  "items": [],
+  "rep": 200,
+  "note": "Kein Item-Reward"
+ },
+ "technical": [
+  "CancelQuestOnPlayerDeath: 1",
+  "2 separate TreasureHunt-Objectives, ExpansionQuestSeaChest, DigInStash:0, je eine feste Position.",
+  "Alle Kistenitems garantiert; Delivery darf sie nicht nochmals spawnen."
+ ],
+ "note": null,
+ "status": "final",
+ "startItems": null
+},
+{
+ "id": 5205,
+ "title": "Einer fehlt",
+ "npc": 925,
+ "giver": "Mr. White (925)",
+ "turnIn": "Mr. White (925)",
+ "prereq": [
+  5204
+ ],
+ "rep": 0,
+ "repeat": "einmalig",
+ "cooldown": "–",
+ "tags": [
+  "Travel",
+  "Sequential",
+  "Illegal"
+ ],
+ "dialog": {
+  "an": "Du erinnerst dich, dass ich gesagt habe, einer fehlt?\n\nIn diesem Haus arbeiten normalerweise sieben Leute. Du hast sechs erledigt.\n\nDer Siebte war ihr Beschaffer. Chemikalien. Werkzeug. Material.\n\nGeh noch einmal zurück zum Drogenhaus. Sieh dich diesmal genauer um.\n\nLeichen sind nicht besonders gesprächig. Aber Menschen hinterlassen Dinge.",
+  "offen": "Der siebte Mann verschwindet nicht einfach, <>.\n\nGeh zurück zum Drogenhaus und fang dort an.\n\nWenn du einen Hinweis findest, folg ihm.",
+  "ab": "Und?\n\nAufgehängt? Dann wollte jemand eine Nachricht hinterlassen.\n\nWas stand darauf?\n\nKrähe.\n\nNatürlich. Katya Morozova. Die meisten nennen sie Krähe.\n\nSie transportiert Dinge, die andere Leute nicht transportieren wollen.\n\nSie lebt an einem Haus am Wasser. Geh zum See.\n\nUnd wenn sie fragt, wer dich schickt: Sag Sergej. Mich mag sie nicht."
+ },
+ "objectiveText": "Folge der Spur des fehlenden siebten Mannes.",
+ "objectiveExtra": [
+  "1. Drogenhaus/Funkgerät: [7491.559570,232.720963,13813.438477], Radius 1m – 285° … 4 Minuten / 320° … 6 Minuten / HILFE!!!",
+  "2. Hochstand / zweiter Zettel: [7183.863770,277.856750,13999.291992], Radius 1m",
+  "3. Aufgehängter Mann / blutverschmierter Zettel „KRÄHE“: [7093.785156,356.183197,14597.494141], Radius 1m",
+  "Alle Szenenobjekte sind bereits in der Map; Quest spawnt nichts."
+ ],
+ "reward": {
+  "items": [],
+  "rep": 100,
+  "note": "Kein Item-Reward"
+ },
+ "technical": [
+  "3 sequenzielle Travel-Objectives, jeweils Radius 1.0m.",
+  "Keine Questitems, keine AI, keine Mapobjekte."
+ ],
+ "note": "Lokale Editorposition des ersten Zettels <3.415982,-0.920361,2.046422> ist nicht als Worldspace zu verwenden.",
+ "status": "final",
+ "startItems": null,
+ "loot": null,
+ "delivery": null
+},
+{
+ "id": 5206,
+ "title": "Stille Wasser",
+ "npc": 925,
+ "giver": "Mr. White (925)",
+ "turnIn": "Katya „Krähe“ Morozova (926)",
+ "prereq": [
+  5205
+ ],
+ "rep": 0,
+ "repeat": "einmalig",
+ "cooldown": "–",
+ "tags": [
+  "Travel",
+  "Illegal",
+  "Übergangsquest"
+ ],
+ "dialog": {
+  "an": "Der Name auf dem Zettel war kein Zufall, <>.\n\nKatya Morozova. Die meisten nennen sie Krähe.\n\nSie hat sich an einem See eingerichtet. Krähe bewegt Dinge: Ware, Chemikalien, Lieferungen.\n\nFahr zu ihr. Frag sie, was mit unserem Beschaffer passiert ist und wo der Rest seiner Lieferung geblieben ist.\n\nUnd fang nicht gleich mit dem aufgehängten Mann an.",
+  "offen": "Krähe lebt am See, <>.\n\nFahr hin und sprich mit ihr.\n\nUnd denk daran: Du willst Informationen. Keine neue Leiche.",
+  "ab": "Bleib stehen.\n\nIch kenne dich nicht.\n\nDu erwähnst Sergej. Dann fällt Mr. Whites Name.\n\nNatürlich. Ich hätte wissen müssen, dass dieser gelbe Klugscheißer irgendwann jemanden herschickt.\n\nKatya Morozova. Krähe reicht.\n\nEr hat meinen Namen geschrieben? Dann war er entweder verzweifelt … oder schlauer, als ich dachte.\n\nIch weiß, nach welcher Lieferung ihr sucht. Ein Teil davon ist dort gelandet, wo niemand freiwillig schwimmen geht.\n\nWenn du wissen willst, wo, dann solltest du dich besser mit kaltem Wasser anfreunden."
+ },
+ "objectiveText": "Finde Krähe in ihrem Haus am See.",
+ "objectiveExtra": [
+  "Krähe: [13258.984375,30.201698,11565.803711]"
+ ],
+ "reward": {
+  "items": [],
+  "rep": 50,
+  "note": "Kein Item-Reward"
+ },
+ "technical": [
+  "Kontakt-/Travelquest nach dem bewährten Muster von 5202."
+ ],
+ "note": "5207 wird danach direkt bei Krähe angenommen.",
+ "status": "final",
+ "startItems": null,
+ "loot": null,
+ "delivery": null
+},
+{
+ "id": 5207,
+ "title": "Nasse Ware",
+ "npc": 926,
+ "giver": "Krähe (926)",
+ "turnIn": "Krähe (926)",
+ "prereq": [
+  5206
+ ],
+ "rep": 0,
+ "repeat": "einmalig",
+ "cooldown": "–",
+ "tags": [
+  "TreasureHunt",
+  "Sequential",
+  "Illegal"
+ ],
+ "dialog": {
+  "an": "Du willst also wissen, was mit der Lieferung passiert ist.\n\nDie Ware kam über mich. Nicht alles. Aber ein Teil davon.\n\nWasser stellt weniger Fragen. Normalerweise.\n\nDer letzte Transport hat sein Ziel nicht erreicht. Das Boot ist dort draußen verloren gegangen.\n\nSuch das Wrack. Dort sollten noch zwei Seekisten liegen. Hol dir, was davon noch brauchbar ist, und sieh genau nach, was tatsächlich drinsteckt.\n\nFalls du nicht schwimmen kannst, wäre jetzt übrigens ein ziemlich schlechter Zeitpunkt, mir das zu erzählen.",
+  "offen": "Die beiden Kisten liegen noch immer beim Wrack, <>.\n\nSuch sie und sieh dir genau an, was darin steckt.\n\nDie Fracht sollte wasserfest verpackt sein.",
+  "ab": "Na sieh einer an. Du bist tatsächlich wieder aufgetaucht.\n\nKrähe lässt sich von dir aufzählen, was du gefunden hast.\n\nWarte. Nein. Das stimmt nicht.\n\nDie Sachen waren Teil einer Lieferung. Aber nicht der Lieferung, die dort vollständig hätte liegen sollen.\n\nJemand hat an der Fracht herumgespielt.\n\nIch glaube, ich weiß, wo der Austausch passiert ist. Diesmal allerdings nicht unter Wasser."
+ },
+ "objectiveText": "Finde und durchsuche die zwei Seekisten beim verlorenen Schmuggeltransport.",
+ "objectiveExtra": [
+  "Seekiste 1: [1878.846436,1.210461,1795.406128]",
+  "Seekiste 2: [1854.779053,1.859737,1825.179077]",
+  "Beide: ExpansionQuestSeaChest, DigInStash:0, je eine feste Position, Loot vollständig garantiert.",
+  "Kein zusätzliches Travel-Objective zum Wrack."
+ ],
+ "loot": [
+  {
+   "q": 1,
+   "n": "ZenSkills_Injector_ExpBoost",
+   "note": "Kiste 1"
+  },
+  {
+   "q": 1,
+   "n": "ZenSleep_Amphetamine",
+   "note": "Kiste 1"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_Psilocybin_BlueVeils",
+   "note": "Kiste 1"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_SeedPack_Poppy",
+   "note": "Kiste 1"
+  },
+  {
+   "q": 2,
+   "n": "iM7s_Backwoodz_3pk",
+   "note": "Kiste 1"
+  },
+  {
+   "q": 2,
+   "n": "iM7s_Sodium_Hydroxide",
+   "note": "Kiste 1"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_BakingSoda",
+   "note": "Kiste 2"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_SeedPack_CheetahPiss",
+   "note": "Kiste 2"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_Battery_Acid_01",
+   "note": "Kiste 2"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_beaker_a",
+   "note": "Kiste 2"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_Bleach_01",
+   "note": "Kiste 2"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_cylinder_a",
+   "note": "Kiste 2"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_BudTrimmer_Kit",
+   "note": "Kiste 2"
+  },
+  {
+   "q": 1,
+   "n": "iM7s_Thizz_Smiley",
+   "note": "Kiste 2"
+  }
+ ],
+ "reward": {
+  "items": [],
+  "rep": 150,
+  "note": "Kein separater Item-Reward – der komplette Kistenloot bleibt beim Spieler."
+ },
+ "technical": [
+  "2 separate TreasureHunt-Objectives nach Muster 5204/5308/5309.",
+  "Keine Delivery-/Collection-Mechanik; kein Kistenloot wird beim Abschluss entfernt."
+ ],
+ "note": "Führt zu geplantem 5208 „Falsche Fracht“.",
+ "status": "final",
+ "startItems": null,
+ "delivery": null
+},
+
+];
+
+function quest(id){return QUESTS.find(q=>q.id===id);}
+function questTitle(id){const q=quest(id);return q? ("#"+q.id+" – "+q.title) : ("#"+id);}
+
+/* Noch offene Roadmap der illegalen Hauptquestreihe – 5200–5207 sind inzwischen ausgearbeitet. */
+const PLANNED_UNBUILT = [
+  {id:5208,title:"Falsche Fracht"},{id:5209,title:"Blue Sky"},{id:5210,title:"Onkel Gena"},
+  {id:5211,title:"Der Schwarze Ritter"},{id:5212,title:"Insel ohne Zeugen"},{id:5213,title:"Bunte Zettel"},
+  {id:5214,title:"Der Kurs"},{id:5215,title:"Der erste Tausch"},{id:5216,title:"Weiße Ware"},
+  {id:5217,title:"Von Hand zu Hand"},{id:5218,title:"Lebend ist er mehr wert"},{id:5219,title:"Mitternachtszug"},
+  {id:5220,title:"Gewicht"},{id:5221,title:"Das Netzwerk"},
+];
+
+const PLANNED_CONTACTS = [
+  "Sergej – NPC 916 – Einstieg / Vermittler",
+  "Viktor „Ratte“ Malenko – NPC 924 – Kurier / versteckte Scheune",
+  "Mikhail „Mr. White“ Orlov – NPC 925 – Produktion / Chemie",
+  "Katya „Krähe“ Morozova – NPC 926 – Schmuggel / Wasserwege",
+  "Gennadi „Onkel Gena“ Petrov – geplanter Kontakt / Burg-Lager",
+  "Lewis Brenner – NPC 920 – Metro / Pfandhaus"
+];
+const PLANNED_LOCATIONS = ["Versteckte Scheune","Drogenhaus im Wald","Haus am See","Schiffswrack","Abgelegene Insel","Geheimes Lager in der Burg","Militärischer Umschlagplatz mit Zug","Metro"];
+
+const OPEN_POINTS = [
+  {area:"Illegale Hauptreihe",status:"offen",text:"5208 „Falsche Fracht“ bis 5221 „Das Netzwerk“ sind noch Roadmap und müssen Quest für Quest ausgearbeitet werden."},
+  {area:"5203",status:"prüfen",text:"Exakte Gelato-Bud-Branch-Classnames, rohe Branch-Menge und aktueller Yield aus der installierten iM7s-Version serverseitig verifizieren."},
+  {area:"5029",status:"prüfen",text:"4x DryingBud Gelato + 4x DryingBud Blue Cookies sind festgelegt; exakte technische DryingBud-Classnames noch aus der aktuellen Serverconfig bestätigen."},
+  {area:"Lewis Brenner (920)",status:"offen",text:"Kontakt über 5040 vorhanden; eigene Lewis-/Pfandhaus-Questreihe noch nicht ausgearbeitet."},
+  {area:"Archivar Igor (910)",status:"offen",text:"NPC/Station existiert, aber eine eigene Archivar-Questreihe fehlt noch."},
+  {area:"5208",status:"nächster Schritt",text:"Direkte Fortsetzung nach 5207 bei Krähe: Ziele, Positionen, Items und Reward für „Falsche Fracht“ noch festlegen."}
+];
+
+
+/* Gemeinsamer finaler Lootpool für die TreasureHunt-Quests 5308 / 5309 */
+const BOARD_TREASURE_LOOTPOOL = [
+  "AmmoBox_762x39_20Rnd","AmmoBox_556x45_20Rnd","TetracyclineAntibiotics","BandageDressing","LeatherSewingKit",
+  "WeaponCleaningKit","SharpeningStone","Canteen","TacticalBaconCan","Battery9V",
+  "My_DF_Weapons_Melees_Annihil2","My_DF_Weapons_Melees_DataThrowingKnife_2","My_DF_Weapons_Melees_Polaris",
+  "My_DF_Weapons_Melees_ThieveSea","PurificationTablets","DisinfectantSpray","ExpansionMilkBottle","ExpansionBread3",
+  "My_DF_Weapons_Melees_FairbairnSykes","SodaCan_Spite","ChelatingTablets","InediaInfectedAI_Calcium",
+  "InediaPain_Tramadol","SparkPlug","Derringer_Pink","iM7s_Morphine","ExpansionCheese1","BallisticHelmet_Winter",
+];
+
+const ILLEGAL_TRANSITIONS = [
+  {from:901,fromName:"Dr. Sokolova",via:5008,to:"Sergej (916) in Krest"},
+  {from:911,fromName:"Gärtnerin",via:5028,to:"Cannabis-Anbau (illegale Seite der Gärtnerin-Reihe)"},
+  {from:908,fromName:"Funkerin",via:5040,to:"Lewis Brenner / Pfandhaus, Metro (920)"},
+];
+
+/* ============================================================
+   HILFSFUNKTIONEN
+   ============================================================ */
+function repeatLabel(r){return r==="wiederholbar"?"Wiederholbar":r==="taeglich"?"Wiederholbar (Täglich)":"Einmalig";}
+function repDisplay(rep){ return (rep===null||rep===undefined) ? "Nicht separat dokumentiert" : (rep>0 ? rep+"+" : "0 (keine)"); }
+function statusLabel(s){return s==="final"?"Final":s==="im-aufbau"?"Im Aufbau":s==="geplant"?"Geplant":s==="entwurf"?"Entwurf (nicht final)":s;}
+function statusBadgeClass(s){return s==="final"?"final":s==="im-aufbau"?"aufbau":s==="geplant"?"geplant":s==="entwurf"?"aufbau":"";}
+function fmtItem(it){
+  let s = it.q+"x "+it.n;
+  if(it.note) s += " ("+it.note+")";
+  return s;
+}
+function esc(s){ return (s===null||s===undefined) ? "" : String(s); }
+
+function badgesForQuest(q){
+  let b = [];
+  b.push('<span class="badge '+statusBadgeClass(q.status)+'">'+statusLabel(q.status)+'</span>');
+  b.push('<span class="badge">'+repeatLabel(q.repeat)+'</span>');
+  if(q.rep>0) b.push('<span class="badge rep">Rep '+q.rep+'+</span>');
+  (q.tags||[]).forEach(t=>{
+    let cls = t==="Illegal"?"illegal":(t.indexOf("Übergang")>=0?"uebergang":(t==="Kapitel-Abschluss"?"chapter":""));
+    b.push('<span class="badge '+cls+'">'+t+'</span>');
+  });
+  return b.join("");
+}
+
+function questCard(q){
+  const n = npc(q.npc);
+  return '<div class="card" onclick="openQuest('+q.id+')">'
+    +'<div class="row1"><span class="qid">#'+q.id+'</span></div>'
+    +'<h3>'+esc(q.title)+'</h3>'
+    +'<div class="metaline"><b>'+ (n?n.name:"?") +'</b> · Rep '+repDisplay(q.rep)+'</div>'
+    +'<div class="badges">'+badgesForQuest(q)+'</div>'
+    +'</div>';
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+const NAVGROUPS = [
+  {label:null, items:[["overview","Übersicht"]]},
+  {label:"Welt", items:[["npcs","NPCs"],["quests","Alle Quests"],["chains","Quest-Reihen"],["progression","Quest-Progression"],["reputation","Reputation"],["items","Items"]]},
+  {label:"Kategorien", items:[["repeatable","Wiederholbare Quests"],["daily","Daily Quests"],["group","Gruppenquests"],["illegal","Illegale Übergänge"],["board","Schwarzes Brett"]]},
+  {label:"Status", items:[["dev","In Entwicklung"],["issues","Offene Punkte"]]},
+];
+function buildNav(){
+  const nav = document.getElementById("nav");
+  let html = "";
+  NAVGROUPS.forEach(g=>{
+    if(g.label) html += '<div class="grp-label">'+g.label+'</div>';
+    g.items.forEach(([id,label])=>{
+      html += '<button data-view="'+id+'" onclick="switchView(\''+id+'\')">'+label+'</button>';
+    });
+  });
+  nav.innerHTML = html;
+}
+function switchView(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+  const target = document.getElementById("view-"+id) || document.getElementById("view-"+id.split("-")[0]);
+  if(target) target.classList.add("active");
+  const navBtn = document.querySelector('nav button[data-view="'+id.split("-")[0]+'"]') || document.querySelector('nav button[data-view="'+id+'"]');
+  if(navBtn) navBtn.classList.add("active");
+  window.scrollTo(0,0);
+  renderers[id.split("-")[0]] && renderers[id.split("-")[0]]();
+}
+function openQuest(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById("view-questdetail").classList.add("active");
+  renderQuestDetail(id);
+  window.scrollTo(0,0);
+}
+function openNpc(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById("view-npcdetail").classList.add("active");
+  renderNpcDetail(id);
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
+   RENDER: ÜBERSICHT
+   ============================================================ */
+function renderOverview(){
+  const el = document.getElementById("view-overview");
+  const totalNpcs = NPCS.length;
+  const totalQuests = QUESTS.length;
+  const finalQuests = QUESTS.filter(q=>q.status==="final").length;
+  const draftQuests = QUESTS.filter(q=>q.status==="entwurf").length;
+  const plannedQuests = PLANNED_UNBUILT.length;
+  const repeatableAll = QUESTS.filter(q=>q.repeat==="wiederholbar"||q.repeat==="taeglich").length;
+  const dailyQuests = QUESTS.filter(q=>q.repeat==="taeglich").length;
+  const onceQuests = QUESTS.filter(q=>q.repeat==="einmalig").length;
+  const totalRep = QUESTS.reduce((s,q)=>s+(q.reward&&q.reward.rep?q.reward.rep:0),0);
+  const chains = NPCS.filter(n=>!n.minor && n.questIds.length>0).length;
+  const illegalTrans = ILLEGAL_TRANSITIONS.length;
+  const groupQuests = QUESTS.filter(q=>(q.tags||[]).includes("Gruppenquest")).length;
+  const milizNpc = npc(909), brettNpc = npc(912);
+
+  el.innerHTML = `
+    <h2 class="viewtitle"><span class="f2">F²Z DAYZ</span>Quest-System – Spielerübersicht</h2>
+    <div class="hero-strip"><strong>Alexandria Quest Network</strong><br><span>Alle aktuellen Quest-Reihen, Voraussetzungen, Abgaben, Rewards, Rufpunkte, Untergrundkontakte und offenen Entwicklungspunkte an einem Ort.</span></div>
+    <div class="stat-grid">
+      <div class="stat"><div class="num">${totalNpcs}</div><div class="lbl">NPCs gesamt</div></div>
+      <div class="stat gold"><div class="num">${totalQuests}</div><div class="lbl">Quests gesamt (live)</div></div>
+      <div class="stat"><div class="num">${finalQuests}</div><div class="lbl">Fertige (finale) Quests</div></div>
+      <div class="stat rust"><div class="num">${draftQuests}</div><div class="lbl">Quests im Aufbau (Entwurf)</div></div>
+      <div class="stat rust"><div class="num">${plannedQuests}</div><div class="lbl">Offene Roadmap (5208–5221)</div></div>
+      <div class="stat"><div class="num">${repeatableAll}</div><div class="lbl">Wiederholbare Quests</div></div>
+      <div class="stat"><div class="num">${onceQuests}</div><div class="lbl">Einmalige Quests</div></div>
+      <div class="stat"><div class="num">${dailyQuests}</div><div class="lbl">Tägliche Quests</div></div>
+      <div class="stat"><div class="num">${groupQuests}</div><div class="lbl">Gruppenquests (fertig)</div></div>
+      <div class="stat gold"><div class="num">${totalRep}</div><div class="lbl">Summe aller Quest-Rewards (Rep)</div></div>
+      <div class="stat"><div class="num">${chains}</div><div class="lbl">Quest-Reihen</div></div>
+      <div class="stat rust"><div class="num">${illegalTrans}</div><div class="lbl">Übergänge zu illegalen Linien (live)</div></div>
+    </div>
+    <div class="section-block">
+      <h4>Bekannte Reputationssummen (aus Masterdatei)</h4>
+      <div class="kv">
+        <div class="k">Miroslav</div><div class="v">600 Rep</div>
+        <div class="k">Boris Yankov</div><div class="v">1010 Rep</div>
+        <div class="k">Dr. Sokolova</div><div class="v">910 Rep</div>
+        <div class="k">Gärtnerin</div><div class="v">1350 Rep</div>
+        <div class="k">Jäger</div><div class="v">1250 Rep</div>
+        <div class="k">Funkerin</div><div class="v">635 Rep</div>
+        <div class="k">Mechaniker Grigori/Vitali</div><div class="v">1300 Rep</div>
+        <div class="k">Milizionär Timur Bek</div><div class="v">${milizNpc?milizNpc.totalRep:"–"} Rep (gesamte Kette 5101–5099)</div>
+        <div class="k">Schwarzes Brett (5301–5310)</div><div class="v">${brettNpc?brettNpc.repPerCycle:"–"} Rep pro Daily-Zyklus (theoretisch, kein Einmal-Gesamtwert)</div>
+      </div>
+      <div class="note-box">Die Summe „aller Quest-Rewards“ oben zählt jede Quest genau einmal (einschließlich der täglich wiederholbaren Brett-Quests) und wird nicht doppelt mit den Reihen-Summen verrechnet.</div>
+    </div>
+    <div class="section-block">
+      <h4>Projektstatus</h4>
+      <div class="kv">
+        <div class="k">Final überarbeitet</div><div class="v">${NPCS.filter(n=>n.status==="final"&&!n.minor).map(n=>n.name+" ("+n.id+")").join(", ")}</div>
+        <div class="k">Im Aufbau / Geplant</div><div class="v">${NPCS.filter(n=>(n.status==="im-aufbau"||n.status==="geplant")&&!n.minor).map(n=>n.name+" ("+n.id+")").join(", ")}</div>
+      </div>
+      <div class="note-box">Hinweis: Die illegale Hauptreihe ist bis einschließlich 5207 ausgearbeitet. 5208–5221 bleiben Roadmap. Offene Technik-/Designpunkte stehen gesammelt unter „Offene Punkte“.</div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   RENDER: NPCS
+   ============================================================ */
+function renderNpcs(){
+  const el = document.getElementById("view-npcs");
+  const main = NPCS.filter(n=>!n.minor);
+  const minor = NPCS.filter(n=>n.minor);
+  el.innerHTML = `
+    <h2 class="viewtitle"><span class="f2">Alexandria</span>NPC-Übersicht</h2>
+    <p class="viewdesc">Alle Haupt-NPCs des Questsystems. Klicke auf eine Karte für Details, Questkette und Reputation.</p>
+    <div class="grid" id="npc-main-grid"></div>
+    <h4 style="color:var(--gold);margin:30px 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--line-soft);padding-bottom:8px">Weitere Kontakte (Turn-in-NPCs ohne eigenes Profil)</h4>
+    <div class="grid" id="npc-minor-grid"></div>
+  `;
+  document.getElementById("npc-main-grid").innerHTML = main.map(n=>{
+    const repText = n.repPerCycle!==undefined ? n.repPerCycle+" Rep/Tag" : (n.totalRep!==null && n.totalRep!==undefined ? n.totalRep+" Rep" : "Noch nicht definiert");
+    return '<div class="npc-card" onclick="openNpc('+n.id+')">'
+      +'<div class="qid" style="font-family:var(--mono);color:var(--rust-light);font-size:11px">NPC '+n.id+'</div>'
+      +'<h3>'+esc(n.name)+'</h3>'
+      +'<div class="role">'+esc(n.role)+'</div>'
+      +'<div class="badges"><span class="badge '+statusBadgeClass(n.status)+'">'+statusLabel(n.status)+'</span></div>'
+      +'<div class="metaline" style="margin-top:10px"><b>'+n.questIds.length+'</b> Quests &nbsp;·&nbsp; <b>'+repText+'</b></div>'
+      +'</div>';
+  }).join("");
+  document.getElementById("npc-minor-grid").innerHTML = minor.map(n=>{
+    return '<div class="npc-card" onclick="openNpc('+n.id+')">'
+      +'<div class="qid" style="font-family:var(--mono);color:var(--rust-light);font-size:11px">NPC '+n.id+'</div>'
+      +'<h3>'+esc(n.name)+'</h3>'
+      +'<div class="role">'+esc(n.role)+'</div>'
+      +'<div class="metaline">Standort: '+esc(n.location||"Noch nicht definiert")+'</div>'
+      +'</div>';
+  }).join("");
+}
+
+function renderNpcDetail(id){
+  const n = npc(id);
+  const el = document.getElementById("view-npcdetail");
+  if(!n){ el.innerHTML = "<p>NPC nicht gefunden.</p>"; return; }
+  const qs = n.questIds.map(qid=>quest(qid)).filter(Boolean);
+  el.innerHTML = `
+    <button class="backbtn" onclick="switchView('npcs')">← Zurück zur NPC-Übersicht</button>
+    <h2 class="viewtitle"><span class="f2">NPC ${n.id}</span>${esc(n.name)}</h2>
+    <div class="badges" style="margin-bottom:18px"><span class="badge ${statusBadgeClass(n.status)}">${statusLabel(n.status)}</span></div>
+    <div class="section-block">
+      <h4>Stammdaten</h4>
+      <div class="kv">
+        <div class="k">Rolle</div><div class="v">${esc(n.role)}</div>
+        <div class="k">Standort</div><div class="v">${esc(n.location||"Noch nicht definiert")}</div>
+        <div class="k">Koordinaten</div><div class="v">${esc(n.coords||"Noch nicht definiert")}</div>
+        <div class="k">Fraktion</div><div class="v">${esc(n.faction||"Noch nicht definiert")}</div>
+        <div class="k">Loadout</div><div class="v">${esc(n.loadout||"Noch nicht definiert")}</div>
+        ${n.npcType?('<div class="k">NPC-Typ</div><div class="v">'+esc(n.npcType)+'</div>'):""}
+        <div class="k">DefaultNPCText</div><div class="v">${n.defaultText?esc(n.defaultText):"Noch nicht definiert"}</div>
+        <div class="k">Anzahl Quests</div><div class="v">${n.questIds.length}</div>
+        <div class="k">Gesamt-Reputation</div><div class="v">${n.repPerCycle!==undefined?n.repPerCycle+" Rep pro Daily-Zyklus (theoretisch)":(n.totalRep!==null&&n.totalRep!==undefined?n.totalRep+" Rep":"Noch nicht definiert")}</div>
+      </div>
+      ${n.notes?('<div class="note-box">'+esc(n.notes)+'</div>'):""}
+    </div>
+    ${qs.length? ('<div class="section-block"><h4>Questkette</h4><div class="grid">'+qs.map(questCard).join("")+'</div></div>') :
+      '<div class="section-block"><h4>Questkette</h4><div class="empty-msg">Keine eigenen Quests vorhanden – siehe „In Entwicklung“ für den aktuellen Planungsstand.</div></div>'}
+  `;
+}
+
+/* ============================================================
+   RENDER: ALLE QUESTS (mit Suche + Filter)
+   ============================================================ */
+let questFilters = { npc:"", rep:"", type:"", search:"" };
+const FILTER_CHIPS = ["einmalig","wiederholbar","taeglich","Kein Cooldown","Collection","Delivery","Travel","Target","Action","Crafting","AICamp","AIPatrol","AIVIP","Escort","TreasureHunt","Sequential","Gruppenquest","Kapitel-Abschluss","Übergangsquest","Illegal","final","entwurf"];
+let activeChips = new Set();
+
+function renderQuests(){
+  const el = document.getElementById("view-quests");
+  el.innerHTML = `
+    <h2 class="viewtitle"><span class="f2">Datenbank</span>Alle Quests</h2>
+    <p class="viewdesc">Vollständige Liste aller ${QUESTS.length} Quests. Nutze Suche und Filter, um gezielt nach NPC, Item, Reputation oder Questtyp zu filtern.</p>
+    <div class="toolbar">
+      <input type="text" id="quest-search" placeholder="Suche: Quest-ID, Name, NPC, Item, Reward, Classname..." oninput="onQuestSearch(this.value)">
+      <select id="npc-filter" onchange="onNpcFilter(this.value)">
+        <option value="">Alle NPCs</option>
+        ${NPCS.filter(n=>!n.minor).map(n=>'<option value="'+n.id+'">'+n.name+'</option>').join("")}
+      </select>
+    </div>
+    <div class="chip-filters" id="chip-filters"></div>
+    <div class="grid" id="quest-grid"></div>
+  `;
+  document.getElementById("chip-filters").innerHTML = FILTER_CHIPS.map(c=>
+    '<span class="chip'+(activeChips.has(c)?' on':'')+'" onclick="toggleChip(\''+c+'\')">'+c+'</span>'
+  ).join("");
+  document.getElementById("quest-search").value = questFilters.search;
+  document.getElementById("npc-filter").value = questFilters.npc;
+  paintQuestGrid();
+}
+function onQuestSearch(v){ questFilters.search = v.toLowerCase(); paintQuestGrid(); }
+function onNpcFilter(v){ questFilters.npc = v; paintQuestGrid(); }
+function toggleChip(c){
+  if(activeChips.has(c)) activeChips.delete(c); else activeChips.add(c);
+  renderQuests();
+}
+function questMatchesSearch(q,term){
+  if(!term) return true;
+  const n = npc(q.npc);
+  const haystack = [
+    q.id, q.title, n?n.name:"", q.rep,
+    (q.delivery||[]).map(i=>i.n).join(" "),
+    (q.startItems||[]).map(i=>i.n).join(" "),
+    (q.loot||[]).map(i=>i.n).join(" "),
+    (q.reward.items||[]).map(i=>i.n).join(" "),
+    q.objectiveText||"", (q.objectiveExtra||[]).join(" "),
+    (q.tags||[]).join(" ")
+  ].join(" ").toLowerCase();
+  return haystack.indexOf(term)>=0;
+}
+function questMatchesChips(q){
+  if(activeChips.size===0) return true;
+  for(const c of activeChips){
+    if(c==="einmalig" && q.repeat==="einmalig") continue;
+    if(c==="wiederholbar" && (q.repeat==="wiederholbar"||q.repeat==="taeglich")) continue;
+    if(c==="taeglich" && q.repeat==="taeglich") continue;
+    if(c==="Kein Cooldown" && q.cooldown==="Kein Cooldown") continue;
+    if(c==="final" && q.status==="final") continue;
+    if(c==="entwurf" && q.status==="entwurf") continue;
+    if((q.tags||[]).some(t=>t.toLowerCase().indexOf(c.toLowerCase())>=0)) continue;
+    return false;
+  }
+  return true;
+}
+function paintQuestGrid(){
+  let list = QUESTS.filter(q=>{
+    if(questFilters.npc && String(q.npc)!==String(questFilters.npc)) return false;
+    if(!questMatchesSearch(q,questFilters.search)) return false;
+    if(!questMatchesChips(q)) return false;
+    return true;
+  });
+  document.getElementById("quest-grid").innerHTML = list.length
+    ? list.map(questCard).join("")
+    : '<div class="empty-msg">Keine Quests gefunden.</div>';
+}
+
+/* ============================================================
+   RENDER: QUEST-DETAIL
+   ============================================================ */
+function renderQuestDetail(id){
+  const q = quest(id);
+  const el = document.getElementById("view-questdetail");
+  if(!q){ el.innerHTML="<p>Quest nicht gefunden.</p>"; return; }
+  const n = npc(q.npc);
+  const followUps = QUESTS.filter(o=>(o.prereq||[]).includes(q.id));
+  const prereqLinks = (q.prereq||[]).map(p=>'<span class="linkchip" onclick="openQuest('+p+')">'+questTitle(p)+'</span>').join("") || '<span class="empty-msg" style="padding:0">Keine (Startpunkt / an NPC-Freischaltung gebunden)</span>';
+  const followLinks = followUps.map(f=>'<span class="linkchip" onclick="openQuest('+f.id+')">'+questTitle(f.id)+'</span>').join("") || '<span class="empty-msg" style="padding:0">Keine – Ende der aktuellen Kette / letzte final gelieferte Quest.</span>';
+
+  function dialogBlock(label,text){
+    if(text===undefined || text===null) return '<div class="dialog-block missing"><div class="lbl">'+label+'</div><p>'+esc(q.noDialogReason||"Noch nicht definiert.")+'</p></div>';
+    return '<div class="dialog-block"><div class="lbl">'+label+(q.draft?" (Aktueller Entwurf)":"")+'</div><p>'+esc(text)+'</p></div>';
+  }
+
+  el.innerHTML = `
+    <button class="backbtn" onclick="switchView('quests')">← Zurück zur Questliste</button>
+    <h2 class="viewtitle"><span class="f2">Quest #${q.id}</span>${esc(q.title)}</h2>
+    <div class="badges" style="margin-bottom:18px">${badgesForQuest(q)}</div>
+
+    <div class="section-block">
+      <h4>Grunddaten</h4>
+      <div class="kv">
+        <div class="k">Questgeber</div><div class="v">${esc(q.giver)}</div>
+        <div class="k">NPC-ID</div><div class="v">${n?n.id:"–"}</div>
+        <div class="k">Status</div><div class="v">${statusLabel(q.status)}</div>
+        <div class="k">Voraussetzungen</div><div class="v">${(q.prereq&&q.prereq.length)?q.prereq.map(p=>"#"+p).join(", "):"Keine"}</div>
+        <div class="k">Benötigte Reputation</div><div class="v">${repDisplay(q.rep)}</div>
+        <div class="k">Questtyp</div><div class="v">${(q.tags||[]).join(", ")||"Noch nicht definiert"}</div>
+        <div class="k">Wiederholbarkeit</div><div class="v">${repeatLabel(q.repeat)}</div>
+        <div class="k">Cooldown</div><div class="v">${esc(q.cooldown)}</div>
+        <div class="k">Kapitel-Abschluss</div><div class="v">${(q.tags||[]).includes("Kapitel-Abschluss")?"Ja":"Nein"}</div>
+        <div class="k">Übergangsquest</div><div class="v">${(q.tags||[]).some(t=>t.indexOf("Übergang")>=0)?"Ja":"Nein"}</div>
+        ${q.maxDistance?('<div class="k">MaxDistance</div><div class="v">'+esc(q.maxDistance)+'</div>'):""}
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h4>Dialoge</h4>
+      ${dialogBlock("Beim Annehmen", q.dialog?q.dialog.an:null)}
+      ${dialogBlock("Solange offen", q.dialog?q.dialog.offen:null)}
+      ${dialogBlock("Nach Abschluss", q.dialog?q.dialog.ab:null)}
+    </div>
+
+    <div class="section-block">
+      <h4>Objective</h4>
+      <p style="font-size:13.5px;color:var(--ink);line-height:1.6">${esc(q.objectiveText)||"Noch nicht definiert."}</p>
+      ${(q.objectiveExtra&&q.objectiveExtra.length)?('<ul class="itemlist">'+q.objectiveExtra.map(x=>'<li><span></span><span>'+esc(x)+'</span></li>').join("")+'</ul>'):""}
+    </div>
+
+    <div class="section-block">
+      <h4>Bei Annahme / Startitems</h4>
+      ${q.startItems&&q.startItems.length ? ('<ul class="itemlist">'+q.startItems.map(it=>'<li><span class="qty">'+it.q+'x</span><span>'+esc(it.n)+(it.note?' <span class="note">('+esc(it.note)+')</span>':'')+'</span></li>').join("")+'</ul>') : '<div class="empty-msg">Keine Startitems.</div>'}
+    </div>
+
+    <div class="section-block">
+      <h4>Questloot / Fund</h4>
+      ${q.loot&&q.loot.length ? ('<ul class="itemlist">'+q.loot.map(it=>'<li><span class="qty">'+it.q+'x</span><span>'+esc(it.n)+(it.note?' <span class="note">('+esc(it.note)+')</span>':'')+'</span></li>').join("")+'</ul>') : '<div class="empty-msg">Kein fest definierter Questloot.</div>'}
+    </div>
+
+    <div class="section-block">
+      <h4>Abgabe</h4>
+      ${q.delivery&&q.delivery.length ? ('<ul class="itemlist">'+q.delivery.map(it=>'<li><span class="qty">'+it.q+'x</span><span>'+esc(it.n)+(it.note?' <span class="note">('+esc(it.note)+')</span>':'')+'</span></li>').join("")+'</ul>')
+        : '<div class="empty-msg">Keine Abgabe erforderlich.</div>'}
+    </div>
+
+    <div class="section-block">
+      <h4>Reward</h4>
+      ${q.reward.items&&q.reward.items.length ? ('<ul class="itemlist">'+q.reward.items.map(it=>'<li><span class="qty">'+it.q+'x</span><span>'+esc(it.n)+(it.note?' <span class="note">('+esc(it.note)+')</span>':'')+'</span></li>').join("")+'</ul>')
+        : '<div class="empty-msg">'+(q.reward.note||"Kein Item-Reward")+'</div>'}
+    </div>
+
+    <div class="section-block">
+      <h4>Reputation</h4>
+      <div class="kv">
+        <div class="k">Reputation-Reward</div><div class="v">+${q.reward.rep} Rep</div>
+        <div class="k">Benötigte Reputation</div><div class="v">${repDisplay(q.rep)}</div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h4>Vorherige Quest</h4>
+      <div class="linklist">${prereqLinks}</div>
+    </div>
+    <div class="section-block">
+      <h4>Folgequest</h4>
+      <div class="linklist">${followLinks}</div>
+    </div>
+    <div class="section-block">
+      <h4>Turn-in-NPC</h4>
+      <div class="kv"><div class="k">Abgabe bei</div><div class="v">${esc(q.turnIn)}</div></div>
+    </div>
+    <div class="section-block">
+      <h4>Technische Hinweise</h4>
+      ${q.technical&&q.technical.length ? ('<ul class="itemlist">'+q.technical.map(t=>'<li><span></span><span>'+esc(t)+'</span></li>').join("")+'</ul>') : '<div class="empty-msg">Keine weiteren technischen Angaben vorhanden.</div>'}
+      ${q.note?('<div class="note-box">'+esc(q.note)+'</div>'):""}
+    </div>
+  `;
+}
+
+/* ============================================================
+   RENDER: QUEST-REIHEN – kompakte Spielerübersicht
+   ============================================================ */
+const QUEST_CHAINS = [
+  {name:"Hauptstory / Einstieg",theme:"Hauptstory",desc:"Ältester Miroslav – Ankommen, Alexandria kennenlernen, Rufsystem und Schwarzes Brett freischalten.",ids:[5000,5023,5001,5002,5009]},
+  {name:"Basisausbau / Lager",theme:"Aufbau",desc:"Lagermeister Boris Yankov – Nachschub, Lagerausbau und tägliche Bestandskontrolle.",ids:[5004,5018,5019,5020,5021,5022]},
+  {name:"Jagd",theme:"Alltag / Progression",desc:"Anton Vasilenko – Fleisch, Leder und zunehmende Jagdprüfungen.",ids:[5003,5005,5013,5014,5015,5016]},
+  {name:"Medizin / Kliniken",theme:"Alltag → Illegal",desc:"Dr. Yevgenia Sokolova – medizinischer Nachschub, Außenkliniken und Übergang zu Sergej.",ids:[5100,5007,5010,5011,5012,5031,5032,5033,5008]},
+  {name:"Anbau / Cannabis",theme:"Aufbau → Illegal",desc:"Lise Baumann – Landwirtschaft, Gewächshaus, Hanf und Verarbeitung.",ids:[5024,5025,5026,5027,5028,5029,5030]},
+  {name:"Funknetz / Lewis",theme:"Aufbau → Illegal",desc:"Nastya Orlova – Funkbetrieb, drei Türme und Kontakt zu Lewis Brenner.",ids:[5034,5039,5035,5036,5037,5038,5040]},
+  {name:"Mechaniker",theme:"Aufbau",desc:"Grigori Federov → Vitali „Ölfinger“ Federov – Werkstatt, Fahrzeugteile und Automobilbau.",ids:[5041,5042,5043,5044,5045,5046,5047]},
+  {name:"Miliz / Banditen-Hauptreihe",theme:"Hauptstory / Gruppe",desc:"Timur Bek → Nikolaj Batya → Alexei – Außenposten, Banditen, Sanctuary, Eskorte und Bohrinsel.",ids:[5101,5102,5103,5104,5098,5105,5106,5099]},
+  {name:"Untergrund / DrugRunning",theme:"Illegal",desc:"Sergej → Viktor → Mr. White → Krähe. Aktuell ausgearbeitet bis 5207; 5208 ist der nächste offene Schritt.",ids:[5200,5201,5202,5203,5204,5205,5206,5207]},
+  {name:"Schwarzes Brett",theme:"Täglich",desc:"Daily-/Repeatable-Aufträge in Alexandria. 5310 wird erst nach 5105 freigeschaltet.",ids:[5301,5302,5303,5304,5305,5306,5307,5308,5309,5310]}
+];
+function compactItems(arr){if(!arr||!arr.length)return "–";return arr.map(i=>i.q+"x "+i.n).join("<br>");}
+function compactGoal(q){let t=q.objectiveText||"";if(!t&&q.delivery&&q.delivery.length)t="Abgabe / Lieferung";return esc(t||"–");}
+function renderChains(){
+  const el=document.getElementById("view-chains");
+  el.innerHTML=`
+    <h2 class="viewtitle"><span class="f2">SPIELERÜBERSICHT</span>Quest-Reihen</h2>
+    <p class="viewdesc">Kompakte Gesamtansicht nach Questketten: Reihenfolge, NPCs, Voraussetzungen, Rufschwelle, Ziel, benötigte Items, Fundloot, Rewards und Rufpunkte. Für vollständige Dialoge und technische Details die Quest-ID anklicken.</p>
+    ${QUEST_CHAINS.map(chain=>{
+      const qs=chain.ids.map(id=>quest(id)).filter(Boolean);
+      const sum=qs.reduce((a,q)=>a+(q.reward&&q.reward.rep?q.reward.rep:0),0);
+      return `<div class="section-block"><div class="chain-header"><div><div class="chain-meta">${esc(chain.theme)}</div><h3>${esc(chain.name)}</h3></div><div class="repplus">+${sum} Rep · Summe bei einmaligem Abschluss</div></div><p class="viewdesc" style="margin-bottom:12px">${esc(chain.desc)}</p><div class="chain-table-wrap"><table class="chain-table"><thead><tr><th>#</th><th>Quest</th><th>Geber → Turn-in</th><th>Voraussetzung / Ruf</th><th>Ziel</th><th>Abgabe / Start / Fund</th><th>Reward</th><th>Rep</th></tr></thead><tbody>${qs.map((q,idx)=>`<tr><td>${idx+1}<br><span class="linkchip" onclick="openQuest(${q.id})">#${q.id}</span></td><td><span class="qname">${esc(q.title)}</span><br><span class="chain-meta">${repeatLabel(q.repeat)} · ${(q.tags||[]).join(" / ")}</span></td><td>${esc(q.giver)}<br><span class="chain-meta">→ ${esc(q.turnIn)}</span></td><td>${(q.prereq&&q.prereq.length)?q.prereq.map(x=>"#"+x).join(", "):"–"}<br><span class="repplus">${q.rep?"Rep "+q.rep+"+":"keine Rufschwelle"}</span></td><td>${compactGoal(q)}</td><td>${q.startItems&&q.startItems.length?"<b>Start:</b><br>"+compactItems(q.startItems)+"<br>":""}${q.delivery&&q.delivery.length?"<b>Abgabe:</b><br>"+compactItems(q.delivery)+"<br>":""}${q.loot&&q.loot.length?"<b>Fund:</b><br>"+compactItems(q.loot):(!(q.startItems&&q.startItems.length)&&!(q.delivery&&q.delivery.length)?"–":"")}</td><td>${q.reward&&q.reward.items&&q.reward.items.length?compactItems(q.reward.items):((q.reward&&q.reward.note)||"Kein Item-Reward")}</td><td class="repplus">+${q.reward&&q.reward.rep?q.reward.rep:0}</td></tr>`).join("")}</tbody></table></div></div>`;
+    }).join("")}`;
+}
+
+/* ============================================================
+   RENDER: PROGRESSION
+   ============================================================ */
+function renderProgression(){
+  const el = document.getElementById("view-progression");
+  el.innerHTML = `
+    <h2 class="viewtitle"><span class="f2">Quest-Tree</span>Quest-Progression</h2>
+    <p class="viewdesc">Der Haupteinstieg beginnt bei 5000 → 5023. Danach verzweigt das System zu den einzelnen NPC-Reihen. Parallele Quests und Übergänge zwischen NPCs sind sichtbar dargestellt.</p>
+
+    <div class="section-block">
+      <h4>Haupteinstieg</h4>
+      <div class="tree"><span class="y">5000</span> „Willkommen in der Hölle von F²Dayz“
+  ↓
+<span class="y">5023</span> „Rundgang durch Alexandria“ (8 Stationen, sequenziell)
+  ↓
+Alexandria öffnet sich → alle NPC-Reihen werden verfügbar</div>
+    </div>
+
+    <div class="section-block">
+      <h4>Miroslav (900)</h4>
+      <div class="tree"><span class="g">5023</span> → <span class="g">5001</span> → <span class="g">5002</span> → <span class="g">5009</span> (Rep 550+)</div>
+    </div>
+
+    <div class="section-block">
+      <h4>Boris Yankov (903)</h4>
+      <div class="tree">5023 ┬ <span class="g">5004</span> (wiederholbar)
+     ├ <span class="g">5018</span>
+     ├ <span class="g">5019</span> (Rep 1000+, wiederholbar)
+     ├ <span class="g">5020</span> (Rep 1000+)
+     ├ <span class="g">5021</span> (Rep 2500+, täglich)
+     └ <span class="g">5022</span> (Rep 5000+) <span class="r">[Kapitel-Abschluss]</span></div>
+    </div>
+
+    <div class="section-block">
+      <h4>Dr. Sokolova (901)</h4>
+      <div class="tree">5023 ┬ <span class="g">5100</span> ┬ <span class="g">5012</span> ┐
+     │       ├ <span class="g">5031</span> ┼→ <span class="g">5033</span> (Rückkehr)
+     │       └ <span class="g">5032</span> ┘
+     ├ <span class="g">5007</span> (Rep1000+) ┐
+     └ <span class="g">5010</span> (Rep1000+) ┴→ <span class="g">5011</span> (Rep2500+, täglich)
+
+5007 + 5100 + 5012 + 5031 + 5032  →  <span class="r">5008</span> „Vertrauliches Gespräch“ (Rep3000+)
+                                        ↓ <span class="r">[Übergangsquest – illegal]</span>
+                                  Sergej (916) in Krest</div>
+    </div>
+
+    <div class="section-block">
+      <h4>Gärtnerin (911)</h4>
+      <div class="tree"><span class="g">5024</span> → <span class="g">5025</span> → <span class="g">5026</span> → <span class="g">5027</span> → <span class="r">5028</span> <span class="r">[Übergang illegal]</span> → <span class="r">5029</span> → <span class="r">5030</span> <span class="r">[Kapitel-Abschluss]</span></div>
+    </div>
+
+    <div class="section-block">
+      <h4>Jäger (906)</h4>
+      <div class="tree">5023 ┬ <span class="g">5003</span> (wiederholbar)
+     ├ <span class="g">5005</span> (wiederholbar)
+     ├ <span class="g">5013</span> (wiederholbar)
+     └ <span class="g">5014</span> (Rep1000+) → <span class="g">5015</span> (Rep2500+) → <span class="g">5016</span> (Rep5000+) <span class="r">[Kapitel-Abschluss]</span></div>
+    </div>
+
+    <div class="section-block">
+      <h4>Funkerin (908)</h4>
+      <div class="tree"><span class="g">5034</span> → <span class="g">5039</span> → <span class="g">5035</span> ┬ <span class="g">5036</span> (Polonina) ┐
+                       ├ <span class="g">5037</span> (Erbenka) ┼→ <span class="r">5040</span> „Der Kontakt“
+                       └ <span class="g">5038</span> (Olsha)   ┘   <span class="r">[Übergangsquest – illegal]</span>
+                                                          ↓
+                                              Lewis Brenner / Pfandhaus</div>
+    </div>
+
+    <div class="section-block">
+      <h4>Mechaniker Grigori Federov (907) → Vitali „Ölfinger“ Federov (921)</h4>
+      <div class="tree"><span class="g">5041</span> → <span class="g">5042</span> → <span class="g">5043</span> → <span class="y">5044</span> <span class="y">[Übergang zu Vitali]</span> → <span class="g">5045</span> → <span class="g">5046</span> → <span class="g">5047</span> <span class="r">[Kapitel-Abschluss]</span></div>
+    </div>
+
+    <div class="section-block">
+      <h4>Milizionär Timur Bek (909) → Nikolaj Batya (922) → Alexei (923)</h4>
+      <div class="tree"><span class="g">5101</span> (Rep550+) → <span class="g">5102</span> (Rep1000+) → <span class="g">5103</span> (Rep1500+) → <span class="g">5104</span> (Rep1500+, Turn-in Nikolaj)
+   → <span class="g">5098</span> (Rückweg, Geber Nikolaj) → <span class="y">5105</span> „Eskorte des Ingenieurs“ <span class="y">[benötigt 5098 UND 5104, Rep1500+]</span>
+   → <span class="g">5106</span> (Turn-in Alexei) → <span class="r">5099</span> „Der Beweiskoffer“ (Geber Alexei) <span class="r">[Ende der Reihe]</span></div>
+      <div class="note-box">Gesamt-Reputation der kompletten Miliz-Reihe: 2100 Rep. 5105 ist die einzige Quest der Reihe mit doppelter Voraussetzung (5098 + 5104).</div>
+    </div>
+
+    <div class="section-block">
+      <h4>Illegale Hauptreihe – Sergej → Viktor → Mr. White → Krähe</h4>
+      <div class="tree"><span class="r">5200</span> → <span class="r">5201</span> → <span class="r">5202</span> → <span class="r">5203</span> <span class="y">[zusätzlich 5030]</span> → <span class="r">5204</span> → <span class="r">5205</span> → <span class="r">5206</span> → <span class="r">5207</span>
+   ↓
+<span class="y">5208 „Falsche Fracht“</span> <span class="y">[nächster geplanter Schritt]</span></div>
+      <div class="note-box">Aktuell ausgearbeitet: 5200–5207. Roadmap danach: 5208–5221.</div>
+    </div>
+
+    <div class="section-block">
+      <h4>Schwarzes Brett (912) – Daily-Quests 5301–5310</h4>
+      <div class="tree">5002 ┬ 5301 „Ausdünnen“
+     ├ 5302 „Raubtierkontrolle“
+     ├ 5303 „Jagdquote“
+     ├ 5304 „Helfende Hand“
+     ├ 5305 „Kontrollrunde“
+     ├ <span class="r">5306</span> „Banditenblockade“ <span class="r">[einzige Board-Daily: Tod bricht ab]</span>
+     ├ 5307 „Banditenpatrouille“
+     ├ 5308 „Vergrabene Vorräte“
+     └ 5309 „Vergrabene Vorräte II“
+
+5002 + 5105 → <span class="y">5310</span> „Vermisster Überlebender“ <span class="y">[einzige Board-Quest mit doppelter Voraussetzung]</span></div>
+      <div class="note-box">Alle zehn Quests: Repeatable, IsDailyQuest, Autocomplete – keine Rückkehr zum Brett nötig. Theoretisch 610 Rep/Tag, wenn alle zehn an einem Zyklus abgeschlossen werden.</div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   RENDER: REPUTATION
+   ============================================================ */
+function renderReputation(){
+  const el = document.getElementById("view-reputation");
+  const chainNpcs = NPCS.filter(n=>!n.minor && n.questIds.length>0);
+  el.innerHTML = `
+    <h2 class="viewtitle"><span class="f2">Fortschritt</span>Reputation</h2>
+    <p class="viewdesc">Für jeden NPC: bei welcher Reputationsschwelle welche Quests verfügbar werden. Automatisch aus den Reputationswerten der Quests erzeugt.</p>
+    <div id="rep-content"></div>
+  `;
+  const content = document.getElementById("rep-content");
+  content.innerHTML = chainNpcs.map(n=>{
+    const qs = n.questIds.map(id=>quest(id)).filter(Boolean);
+    const tiers = {};
+    const undocumented = [];
+    qs.forEach(q=>{ if(q.rep===null||q.rep===undefined){ undocumented.push(q); } else { (tiers[q.rep] = tiers[q.rep]||[]).push(q); } });
+    const tierKeys = Object.keys(tiers).map(Number).sort((a,b)=>a-b);
+    const totalText = n.repPerCycle!==undefined ? n.repPerCycle+" Rep pro Daily-Zyklus (theoretisch)"
+      : (n.totalRep!==null&&n.totalRep!==undefined?n.totalRep+" Rep":"Noch nicht definiert");
+    return '<div class="rep-block">'
+      +'<h3>'+esc(n.name)+' ('+n.id+')</h3>'
+      +'<div class="rep-total">Gesamt-Reputation: '+totalText+'</div>'
+      +tierKeys.map(t=>'<div class="rep-tier"><span class="thresh">Rep '+t+'</span><span class="quests">'+tiers[t].map(q=>'<span class="linkchip" onclick="openQuest('+q.id+')">'+questTitle(q.id)+'</span>').join("")+'</span></div>').join("")
+      +(undocumented.length? ('<div class="rep-tier"><span class="thresh">Nicht dok.</span><span class="quests">'+undocumented.map(q=>'<span class="linkchip" onclick="openQuest('+q.id+')">'+questTitle(q.id)+'</span>').join("")+'</span></div>') : "")
+      +'</div>';
+  }).join("");
+}
+
+/* ============================================================
+   RENDER: ITEMS (Item-Datenbank, automatisch generiert)
+   ============================================================ */
+function buildItemIndex(){
+  const idx = {};
+  function add(name, questId, questTitleStr, kind){
+    if(!idx[name]) idx[name]=[];
+    idx[name].push({questId,questTitleStr,kind});
+  }
+  QUESTS.forEach(q=>{
+    (q.delivery||[]).forEach(it=>add(it.n, q.id, q.title, "Abgabe/Benötigt"));
+    (q.startItems||[]).forEach(it=>add(it.n, q.id, q.title, "Startitem"));
+    (q.loot||[]).forEach(it=>add(it.n, q.id, q.title, "Questloot/Fund"));
+    (q.reward.items||[]).forEach(it=>add(it.n, q.id, q.title, "Reward"));
+  });
+  return idx;
+}
+function renderItems(){
+  const el = document.getElementById("view-items");
+  const idx = buildItemIndex();
+  const names = Object.keys(idx).sort((a,b)=>a.localeCompare(b));
+  el.innerHTML = `
+    <h2 class="viewtitle"><span class="f2">Datenbank</span>Item-Datenbank</h2>
+    <p class="viewdesc">Automatisch aus allen Questdaten erzeugt: ${names.length} unterschiedliche Items/Classnames, verwendet als Abgabe/Benötigt oder als Reward.</p>
+    <div class="toolbar"><input type="text" id="item-search" placeholder="Item / Classname suchen..." oninput="paintItems(this.value)"></div>
+    <div id="item-list"></div>
+  `;
+  window.__itemIndex = idx;
+  window.__itemNames = names;
+  paintItems("");
+}
+function paintItems(term){
+  term = (term||"").toLowerCase();
+  const idx = window.__itemIndex, names = window.__itemNames;
+  const filtered = names.filter(n=>n.toLowerCase().indexOf(term)>=0);
+  document.getElementById("item-list").innerHTML = filtered.map(name=>{
+    const uses = idx[name];
+    const reqCount = uses.filter(u=>u.kind==="Abgabe/Benötigt").length;
+    const rewCount = uses.filter(u=>u.kind==="Reward").length;
+    const lootCount = uses.filter(u=>u.kind==="Questloot/Fund"||u.kind==="Startitem").length;
+    return '<details class="itemdb-entry"><summary><span class="n">'+esc(name)+'</span><span class="c">'+reqCount+'× benötigt · '+lootCount+'× Start/Fund · '+rewCount+'× Reward</span></summary>'
+      +'<div class="body">'+uses.map(u=>'<div class="usage-row"><span><span class="linkchip" onclick="openQuest('+u.questId+')">'+questTitle(u.questId)+'</span></span><span class="tag '+(u.kind==="Reward"?"rew":"req")+'">'+u.kind+'</span></div>').join("")+'</div></details>';
+  }).join("") || '<div class="empty-msg">Keine Items gefunden.</div>';
+}
+
+/* ============================================================
+   RENDER: WIEDERHOLBARE QUESTS
+   ============================================================ */
+function renderRepeatable(){
+  const el = document.getElementById("view-repeatable");
+  const list = QUESTS.filter(q=>q.repeat==="wiederholbar"||q.repeat==="taeglich");
+  el.innerHTML = `
+    <h2 class="viewtitle"><span class="f2">Kategorie</span>Wiederholbare Quests</h2>
+    <p class="viewdesc">${list.length} von ${QUESTS.length} Quests sind wiederholbar (davon ${list.filter(q=>q.repeat==="taeglich").length} mit täglichem Cooldown, siehe auch „Daily Quests").</p>
+    <div class="grid">${list.map(questCard).join("")}</div>
+  `;
+}
+
+/* ============================================================
+   RENDER: DAILY QUESTS
+   ============================================================ */
+function renderDaily(){
+  const el = document.getElementById("view-daily");
+  const list = QUESTS.filter(q=>q.repeat==="taeglich");
+  const boardList = list.filter(q=>q.npc===912);
+  const otherList = list.filter(q=>q.npc!==912);
+  el.innerHTML = `
+    <h2 class="viewtitle"><span class="f2">Kategorie</span>Daily Quests</h2>
+    <p class="viewdesc">${list.length} Quests mit täglichem Cooldown (IsDailyQuest:1). ${boardList.length} davon gehören zum Schwarzen Brett (5301–5310, siehe eigene Seite „Schwarzes Brett“), ${otherList.length} weitere bei anderen NPCs.</p>
+    ${otherList.length? ('<h4 style="color:var(--gold);margin:20px 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.8px">Andere NPCs</h4><div class="grid">'+otherList.map(questCard).join("")+'</div>') : ""}
+    <h4 style="color:var(--gold);margin:20px 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.8px">Schwarzes Brett (5301–5310)</h4>
+    <div class="grid">${boardList.map(questCard).join("")}</div>
+  `;
+}
+
+/* ============================================================
+   RENDER: GRUPPENQUESTS
+   ============================================================ */
+function renderGroup(){
+  const el = document.getElementById("view-group");
+  const list = QUESTS.filter(q=>(q.tags||[]).includes("Gruppenquest"));
+  el.innerHTML = `<h2 class="viewtitle"><span class="f2">Kategorie</span>Gruppenquests</h2><p class="viewdesc">${list.length} aktuell als Gruppenquest markierte Quests. Die Miliz-Hauptreihe nutzt Gruppenmechaniken ab 5102; 5101 bleibt die vorgelagerte Kontrollrunde.</p><div class="grid">${list.map(questCard).join("")}</div>`;
+}
+
+/* ============================================================
+   RENDER: ILLEGALE ÜBERGÄNGE
+   ============================================================ */
+function renderIllegal(){
+  const el = document.getElementById("view-illegal");
+  const illegal=QUESTS.filter(q=>(q.tags||[]).includes("Illegal"));
+  el.innerHTML = `<h2 class="viewtitle"><span class="f2">UNTERGRUND</span>Illegale Questlinien</h2><p class="viewdesc">Legale Übergänge in den Untergrund sowie die aktuell ausgearbeitete DrugRunning-Hauptreihe. 5200–5207 sind im Questbuch enthalten; 5208–5221 bleiben Roadmap.</p><div class="section-block"><h4>Übergänge aus Alexandria</h4><div class="grid">${ILLEGAL_TRANSITIONS.map(t=>'<div class="card" onclick="openQuest('+t.via+')"><div class="qid">Übergang</div><h3>'+esc(t.fromName)+' → '+esc(t.to)+'</h3><div class="metaline">via <b>'+questTitle(t.via)+'</b></div><div class="badges"><span class="badge illegal">Illegal</span></div></div>').join("")}</div></div><div class="section-block"><h4>DrugRunning 5200–5207</h4><div class="grid">${illegal.filter(q=>q.id>=5200&&q.id<=5207).map(questCard).join("")}</div></div><div class="note-box warn">Nächster offener Schritt: 5208 „Falsche Fracht“. Danach Roadmap bis 5221 „Das Netzwerk“.</div>`;
+}
+
+/* ============================================================
+   RENDER: SCHWARZES BRETT
+   ============================================================ */
+function renderBoard(){
+  const el = document.getElementById("view-board");
+  const n = npc(912);
+  const boardQuests = n.questIds.map(id=>quest(id)).filter(Boolean);
+  el.innerHTML = `
+    <h2 class="viewtitle"><span class="f2">NPC 912</span>Schwarzes Brett – Daily-Bereich</h2>
+    <div class="badges" style="margin-bottom:14px"><span class="badge final">Final</span></div>
+    <div class="section-block">
+      <h4>Stammdaten</h4>
+      <div class="kv">
+        <div class="k">Typ</div><div class="v">${esc(n.npcType)}</div>
+        <div class="k">Koordinaten</div><div class="v">${esc(n.coords)}</div>
+        <div class="k">Standort</div><div class="v">${esc(n.location)}</div>
+        <div class="k">Status</div><div class="v">${statusLabel(n.status)}</div>
+        <div class="k">Anzahl Quests</div><div class="v">${boardQuests.length}</div>
+        <div class="k">Theoretische Rep/Tag</div><div class="v">${n.repPerCycle} Rep, wenn alle zehn an einem Zyklus abgeschlossen werden</div>
+      </div>
+    </div>
+    <div class="section-block">
+      <h4>Wie das Schwarze Brett funktioniert</h4>
+      <ul class="itemlist">
+        <li><span></span><span>5301–5310 sind Daily / Repeatable (Repeatable:1, IsDailyQuest:1)</span></li>
+        <li><span></span><span>Autocomplete:1 – die Quests schließen automatisch ab, sobald das Ziel erfüllt ist</span></li>
+        <li><span></span><span>QuestTurnInIDs: [] – keine Rückkehr zum Brett nach Abschluss nötig</span></li>
+        <li><span></span><span>Unterschiedliche Questtypen: Target, Action, Travel/Sequential, AICamp, TreasureHunt, Travel→AIVIP/Escort</span></li>
+        <li><span></span><span>5306 „Banditenblockade“ ist die einzige der zehn Quests, bei der Spielertod die Quest abbricht – bei allen übrigen aktuellen Board-Dailys bricht Spielertod die Quest nicht ab</span></li>
+        <li><span></span><span>5310 lässt bei VIP-Tod die Quest nativ über die Engine scheitern und benötigt zusätzlich zu 5002 auch 5105</span></li>
+        <li><span></span><span>PreQuestIDs meist [5002], Ausnahme 5310 ([5002, 5105])</span></li>
+      </ul>
+      <div class="note-box">Es wird nicht behauptet, dass alle zehn Quests zwingend gleichzeitig aktiv oder abzuschließen sein müssen.</div>
+    </div>
+    <div class="section-block">
+      <h4>Die 10 Daily-Quests</h4>
+      <div class="grid">${boardQuests.map(questCard).join("")}</div>
+    </div>
+    <div class="section-block">
+      <h4>Gemeinsamer Lootpool (Schatzkisten 5308 / 5309)</h4>
+      <p style="font-size:13px;color:var(--ink-dim);margin-bottom:10px">LootItemsAmount: 10, zufällige Auswahl aus folgendem Pool:</p>
+      <div class="badges">${BOARD_TREASURE_LOOTPOOL.map(i=>'<span class="badge">'+esc(i)+'</span>').join("")}</div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   RENDER: IN ENTWICKLUNG
+   ============================================================ */
+function renderDev(){
+  const el = document.getElementById("view-dev");
+  el.innerHTML = `<h2 class="viewtitle"><span class="f2">STATUS</span>In Entwicklung / Roadmap</h2><p class="viewdesc">Alles, was bereits ausgearbeitet ist, steht im normalen Questbuch. Hier bleiben nur geplante Folgequests und noch nicht ausgebaute NPC-Reihen.</p><div class="section-block"><h4>Illegale Hauptreihe – nächste Quests</h4><div class="note-box">5200–5207 sind ausgearbeitet. Ab 5208 geht die Planung weiter.</div><div class="badges" style="margin-top:12px">${PLANNED_UNBUILT.map(p=>'<span class="badge geplant">#'+p.id+' '+esc(p.title)+'</span>').join("")}</div></div><div class="section-block"><h4>Untergrundkontakte</h4><ul class="itemlist">${PLANNED_CONTACTS.map(c=>'<li><span></span><span>'+esc(c)+'</span></li>').join("")}</ul></div><div class="section-block"><h4>Weitere offene Reihen</h4><div class="kv"><div class="k">Lewis Brenner (920)</div><div class="v">Kontakt existiert über 5040; eigene Pfandhaus-/Tauschreihe noch offen.</div><div class="k">Archivar Igor (910)</div><div class="v">NPC/Station existiert; eigene Wissens-/Sammlerreihe noch offen.</div></div></div>`;
+}
+
+/* ============================================================
+   RENDER: OFFENE PUNKTE / DATENPRÜFUNG
+   ============================================================ */
+function renderIssues(){
+  const el = document.getElementById("view-issues");
+  const idCounts={}; QUESTS.forEach(q=>idCounts[q.id]=(idCounts[q.id]||0)+1);
+  const dupes=Object.entries(idCounts).filter(([id,c])=>c>1);
+  const missingPrereq=[]; QUESTS.forEach(q=>(q.prereq||[]).forEach(p=>{if(!quest(p))missingPrereq.push({quest:q.id,missing:p});}));
+  const notFinal=QUESTS.filter(q=>q.status!=="final");
+  el.innerHTML=`<h2 class="viewtitle"><span class="f2">QA & PLANUNG</span>Offene Punkte</h2><p class="viewdesc">Was fehlt noch, was muss serverseitig verifiziert werden und wo geht die Questplanung als Nächstes weiter?</p><div class="section-block"><h4>Aktuell offene Punkte</h4><table class="datacheck"><tr><th>Bereich</th><th>Status</th><th>Offener Punkt</th></tr>${OPEN_POINTS.map(o=>'<tr><td><b>'+esc(o.area)+'</b></td><td class="status-open">'+esc(o.status)+'</td><td>'+esc(o.text)+'</td></tr>').join("")}</table></div><div class="section-block"><h4>Automatische Datenprüfung</h4><div class="kv"><div class="k">Doppelte Quest-IDs</div><div class="v">${dupes.length?dupes.map(([id,c])=>"#"+id+" ("+c+"×)").join(", "):"Keine – OK"}</div><div class="k">Fehlende Prereq-IDs</div><div class="v">${missingPrereq.length?missingPrereq.map(m=>"#"+m.quest+" → #"+m.missing).join(", "):"Keine – OK"}</div><div class="k">Nicht finale Live-Quests</div><div class="v">${notFinal.length?notFinal.map(q=>"#"+q.id).join(", "):"Keine – OK"}</div><div class="k">Illegale Reihe ausgearbeitet</div><div class="v">5200–5207</div><div class="k">Illegale Reihe Roadmap</div><div class="v">5208–5221</div></div></div><div class="section-block"><h4>Hinweise</h4><ul class="itemlist"><li><span></span><span>Quest 5000 hat weiterhin den bekannten technischen FollowUp-Hinweis auf 5001, während die tatsächliche Einstiegskette über 5023 läuft.</span></li><li><span></span><span>5009 wird thematisch beim Basisausbau/Boris geführt, technisch aber von Miroslav gestartet und bei Boris abgegeben.</span></li><li><span></span><span>5207 hat bewusst keinen separaten Item-Reward: Der komplette Loot aus beiden Seekisten bleibt beim Spieler.</span></li></ul></div>`;
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+const renderers = {
+  overview: renderOverview, npcs: renderNpcs, quests: renderQuests, chains: renderChains,
+  progression: renderProgression, reputation: renderReputation, items: renderItems,
+  repeatable: renderRepeatable, daily: renderDaily, group: renderGroup, illegal: renderIllegal,
+  board: renderBoard, dev: renderDev, issues: renderIssues,
+};
+
+buildNav();
+document.querySelector('nav button[data-view="overview"]').classList.add("active");
+renderOverview();
+</script>
